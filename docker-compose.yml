@@ -1,0 +1,24 @@
+# Local Postgres for development. `npm run db:up` starts it, `npm run db:down` stops it.
+# Production uses Neon (serverless Postgres) — this file is local-only.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: campusrun-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campusrun
+      POSTGRES_PASSWORD: campusrun
+      POSTGRES_DB: campusrun
+    # Host port 5439 (not 5432) to avoid colliding with any other local Postgres.
+    ports:
+      - "5439:5432"
+    volumes:
+      - campusrun-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campusrun -d campusrun"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  campusrun-db-data:

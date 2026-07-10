@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Campus Run palette — the only colors on this page.
+   Gold Rule: gold marks something earned or the one action we want. Nothing else gold. */
+@theme {
+  --color-ink: #003b5c;
+  --color-ink-deep: #002942;
+  --color-gold: #ffcc00;
+  --color-gold-deep: #e8b300;
+  --color-fill: #f5f5f7;
+  --color-muted: #6e6e73;
+  --color-line: #e5e5ea;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-geist), ui-sans-serif,
+    system-ui, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
