@@ -6,7 +6,9 @@ import {
   timestamp,
   smallint,
   text,
+  boolean,
   index,
+  uniqueIndex,
   check,
 } from "drizzle-orm/pg-core";
 
@@ -89,3 +91,27 @@ export const adminSessions = pgTable(
 
 export type Admin = typeof admins.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
+
+/**
+ * A campaign is a named (brand, event) pair — one physical drop for one client.
+ * It generates the NFC link and groups submissions by matching brand+event, so the
+ * capture page stays param-based and lookup-free. (The optional card registry, if we
+ * ever add repointable cards, layers on top via submissions.campaign_id.)
+ */
+export const campaigns = pgTable(
+  "campaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(), // friendly, e.g. "ACME Fall 2025"
+    brand: text("brand").notNull(), // b
+    eventId: text("event_id").notNull(), // e
+    cardNumber: text("card_number"), // c — optional default card for the link
+    active: boolean("active").notNull().default(true),
+    createdBy: uuid("created_by").references(() => admins.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("campaigns_brand_event_uq").on(t.brand, t.eventId)],
+);
+
+export type Campaign = typeof campaigns.$inferSelect;
+export type NewCampaign = typeof campaigns.$inferInsert;

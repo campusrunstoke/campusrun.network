@@ -29,3 +29,25 @@ export const submissionSchema = z.object({
 });
 
 export type SubmissionInput = z.infer<typeof submissionSchema>;
+
+/** URL-safe slug for brand/event ids (what ends up in ?b= and ?e=). */
+const slug = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1)
+  .max(64)
+  .regex(/^[a-z0-9._-]+$/, "use letters, numbers, and - _ . only");
+
+/** Body accepted by POST /api/admin/campaigns. */
+export const campaignSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  b: slug, // brand
+  e: slug, // event / drop id
+  c: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+    z.string().max(64).nullable(),
+  ),
+});
+
+export type CampaignInput = z.infer<typeof campaignSchema>;
