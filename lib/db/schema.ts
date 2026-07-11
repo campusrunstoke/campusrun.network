@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   pgTable,
+  pgEnum,
   uuid,
   timestamp,
   smallint,
@@ -49,3 +50,42 @@ export const submissions = pgTable(
 
 export type Submission = typeof submissions.$inferSelect;
 export type NewSubmission = typeof submissions.$inferInsert;
+
+/** Admin accounts. Passwords are argon2id-hashed — never stored in plaintext. */
+export const adminRoleEnum = pgEnum("admin_role", ["owner", "admin"]);
+
+export const admins = pgTable("admins", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull().unique(), // stored lowercased
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  role: adminRoleEnum("role").notNull().default("admin"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+});
+
+/**
+ * Server-side sessions — the cookie holds a random token; we store only its
+ * SHA-256 hash, so a DB leak can't be replayed. Rows are revocable (logout) and
+ * expiring, which stateless JWTs can't do.
+ */
+export const adminSessions = pgTable(
+  "admin_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tokenHash: text("token_hash").notNull().unique(),
+    adminId: uuid("admin_id")
+      .notNull()
+      .references(() => admins.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    userAgent: text("user_agent"),
+  },
+  (t) => [
+    index("admin_sessions_admin_id_idx").on(t.adminId),
+    index("admin_sessions_expires_at_idx").on(t.expiresAt),
+  ],
+);
+
+export type Admin = typeof admins.$inferSelect;
+export type AdminSession = typeof adminSessions.$inferSelect;

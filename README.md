@@ -60,7 +60,13 @@ npm run dev                       # http://localhost:3000
 ```
 
 Test it: open `http://localhost:3000/stoked?e=test&b=daps`, rate, submit (with and
-without an email). View rows at `/admin` (user/pass from `.env.local`).
+without an email).
+
+Create an admin, then sign in to view the data:
+```bash
+npm run admin:create              # interactive: name, email, password, role
+```
+Sign in at `http://localhost:3000/admin`.
 
 ### Scripts
 
@@ -72,6 +78,7 @@ without an email). View rows at `/admin` (user/pass from `.env.local`).
 | `npm run db:generate`| Generate a migration from schema changes  |
 | `npm run db:migrate` | Apply migrations                          |
 | `npm run db:seed`    | Insert demo rows                          |
+| `npm run admin:create` | Create an admin account (interactive, or via `ADMIN_*` env vars) |
 | `npm test`           | Unit tests (Vitest)                       |
 | `npm run e2e`        | End-to-end tests (Playwright)             |
 | `npm run typecheck`  | `tsc --noEmit`                            |
@@ -106,7 +113,9 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit, build, and e2e on ev
    - (optional) `TURNSTILE_SECRET_KEY` + `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to turn on bot checks
 3. **Run migrations against prod** once (from your machine, with prod `DATABASE_URL`):
    `DATABASE_URL=<neon-pooled-url> npm run db:migrate`
-4. Point `campusrun.network` at the Vercel deployment.
+4. **Create your first admin** against prod:
+   `DATABASE_URL=<neon-pooled-url> npm run admin:create`
+5. Point `campusrun.network` at the Vercel deployment.
 
 Every PR gets a Preview URL — tap it on a real phone before merging to `main`
 (production). Tip: give Preview its own Neon branch so test taps don't hit prod data.
@@ -116,14 +125,15 @@ Every PR gets a Preview URL — tap it on a real phone before merging to `main`
 ## Security posture
 
 **In place:** server-side validation (zod), rating 1–5 enforced in app **and** a DB
-check constraint, honeypot + per-IP rate limit on the public endpoint, admin gate
-(HTTP Basic over HTTPS), security headers, `robots: noindex`, least-PII storage,
+check constraint, honeypot + per-IP rate limit on the public endpoint, **admin accounts
+with argon2id-hashed passwords + revocable server-side sessions** (httpOnly `SameSite`
+cookies, rate-limited login), security headers, `robots: noindex`, least-PII storage,
 oversized-body rejection, secrets only in env (never committed).
 
 **Before heavy scale (tracked):**
 
 - Rate limiter is in-memory (per instance). Swap for Upstash Redis for a hard global limit.
-- Admin auth is a shared Basic credential. Upgrade to real sessions / SSO.
+- Admin auth is per-account sessions; add MFA / SSO when the team grows.
 - Strict CSP is deferred (Next's inline bootstrap needs nonces to do it right).
 - Flip on Cloudflare Turnstile if spam appears (wired, off by default).
 

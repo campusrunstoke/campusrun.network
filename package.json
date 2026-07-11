@@ -13,11 +13,13 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx lib/db/migrate.ts",
     "db:seed": "tsx lib/db/seed.ts",
+    "admin:create": "tsx lib/db/create-admin.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.0.2",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.10",
     "postgres": "^3.4.9",
