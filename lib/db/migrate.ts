@@ -1,5 +1,7 @@
 import { config } from "dotenv";
-config({ path: [".env.local", ".env"] });
+// ENV_FILE lets prod ops load a separate file (e.g. .env.vercel.local) so the
+// connection string never has to be typed on the command line.
+config({ path: process.env.ENV_FILE ? [process.env.ENV_FILE] : [".env.local", ".env"] });
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";

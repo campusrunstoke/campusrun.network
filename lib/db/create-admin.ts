@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-config({ path: [".env.local", ".env"] });
+config({ path: process.env.ENV_FILE ? [process.env.ENV_FILE] : [".env.local", ".env"] });
 import readline from "node:readline";
 import { z } from "zod";
 
