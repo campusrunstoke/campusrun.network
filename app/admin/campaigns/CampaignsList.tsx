@@ -125,13 +125,31 @@ function Card({ item }: { item: Item }) {
           <span className={`h-1.5 w-1.5 rounded-full ${item.active ? "bg-[#4ADE80]" : "bg-[#6B7688]"}`} />
           {item.active ? "Active" : "Paused"}
         </span>
-        <button
-          onClick={toggle}
-          disabled={busy}
-          className="rounded-lg border border-white/10 px-3 py-1 text-xs font-medium text-[#9AA6B8] transition-colors hover:text-white disabled:opacity-50"
-        >
-          {item.active ? "Pause" : "Activate"}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/export?b=${encodeURIComponent(item.brand)}&e=${encodeURIComponent(item.eventId)}${item.cardNumber ? `&c=${encodeURIComponent(item.cardNumber)}` : ""}`}
+            className="flex items-center gap-1 rounded-lg border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
+            title="Download this campaign's submissions"
+          >
+            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            CSV
+          </a>
+          <button
+            onClick={toggle}
+            disabled={busy}
+            className="rounded-lg border border-white/10 px-3 py-1 text-xs font-medium text-[#9AA6B8] transition-colors hover:text-white disabled:opacity-50"
+          >
+            {item.active ? "Pause" : "Activate"}
+          </button>
+        </div>
       </div>
     </div>
   );
