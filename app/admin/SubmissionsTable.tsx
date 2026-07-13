@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import ExportMenu from "./ExportMenu";
 
 type Row = {
@@ -32,6 +33,16 @@ export default function SubmissionsTable({
   shown: number;
 }) {
   const [query, setQuery] = useState("");
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function del(id: string) {
+    if (!confirm("Delete this submission permanently? This cannot be undone.")) return;
+    setDeletingId(id);
+    await fetch(`/api/admin/submissions/${id}`, { method: "DELETE" });
+    router.refresh();
+    setDeletingId(null);
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -84,12 +95,13 @@ export default function SubmissionsTable({
               <Th>Brand</Th>
               <Th>Card</Th>
               <Th>Device</Th>
+              <Th></Th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#6B7688]">
+                <td colSpan={8} className="px-4 py-12 text-center text-sm text-[#6B7688]">
                   {query ? "No matches." : "No submissions yet."}
                 </td>
               </tr>
@@ -124,6 +136,23 @@ export default function SubmissionsTable({
                 <td className="max-w-[220px] truncate px-4 py-3 text-xs text-[#6B7688]">
                   {r.ua ?? "—"}
                 </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => del(r.id)}
+                    disabled={deletingId === r.id}
+                    title="Delete submission"
+                    className="rounded-md border border-white/10 p-1.5 text-[#6B7688] transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-40"
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -133,7 +162,7 @@ export default function SubmissionsTable({
   );
 }
 
-function Th({ children }: { children: React.ReactNode }) {
+function Th({ children }: { children?: React.ReactNode }) {
   return <th className="whitespace-nowrap px-4 py-3 font-medium">{children}</th>;
 }
 
