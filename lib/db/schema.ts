@@ -98,11 +98,16 @@ export type AdminSession = typeof adminSessions.$inferSelect;
  * capture page stays param-based and lookup-free. (The optional card registry, if we
  * ever add repointable cards, layers on top via submissions.campaign_id.)
  */
+// "rating" → capture page (/stoked). "redirect" → log a tap, bounce to destinationUrl.
+export const campaignTypeEnum = pgEnum("campaign_type", ["rating", "redirect"]);
+
 export const campaigns = pgTable(
   "campaigns",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name").notNull(), // friendly, e.g. "ACME Fall 2025"
+    type: campaignTypeEnum("type").notNull().default("rating"),
+    destinationUrl: text("destination_url"), // required for type=redirect
     brand: text("brand").notNull(), // b
     eventId: text("event_id").notNull(), // e
     cardNumber: text("card_number"), // c — optional default card for the link
@@ -115,3 +120,27 @@ export const campaigns = pgTable(
 
 export type Campaign = typeof campaigns.$inferSelect;
 export type NewCampaign = typeof campaigns.$inferInsert;
+
+/**
+ * One row per tap on a redirect (smart-link) campaign — the click counter.
+ * Rating campaigns count `submissions`; redirect campaigns count `taps`.
+ */
+export const taps = pgTable(
+  "taps",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    campaignId: uuid("campaign_id").references(() => campaigns.id, { onDelete: "set null" }),
+    eventId: text("event_id"),
+    brand: text("brand"),
+    cardNumber: text("card_number"),
+    userAgent: text("user_agent"),
+  },
+  (t) => [
+    index("taps_created_at_idx").on(t.createdAt),
+    index("taps_brand_event_idx").on(t.brand, t.eventId),
+  ],
+);
+
+export type Tap = typeof taps.$inferSelect;
+export type NewTap = typeof taps.$inferInsert;

@@ -40,14 +40,29 @@ const slug = z
   .regex(/^[a-z0-9._-]+$/, "use letters, numbers, and - _ . only");
 
 /** Body accepted by POST /api/admin/campaigns. */
-export const campaignSchema = z.object({
-  name: z.string().trim().min(1).max(100),
-  b: slug, // brand
-  e: slug, // event / drop id
-  c: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
-    z.string().max(64).nullable(),
-  ),
-});
+export const campaignSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100),
+    type: z.enum(["rating", "redirect"]).default("rating"),
+    destinationUrl: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+      z
+        .string()
+        .url()
+        .max(2048)
+        .refine((u) => /^https?:\/\//i.test(u), "must start with http:// or https://")
+        .nullable(),
+    ),
+    b: slug, // brand
+    e: slug, // event / drop id
+    c: z.preprocess(
+      (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+      z.string().max(64).nullable(),
+    ),
+  })
+  .refine((d) => d.type !== "redirect" || !!d.destinationUrl, {
+    message: "A destination URL is required for a redirect campaign",
+    path: ["destinationUrl"],
+  });
 
 export type CampaignInput = z.infer<typeof campaignSchema>;

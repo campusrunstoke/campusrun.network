@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 type Item = {
   id: string;
   name: string;
+  type: "rating" | "redirect";
+  destinationUrl: string | null;
   brand: string;
   eventId: string;
   cardNumber: string | null;
@@ -14,6 +16,7 @@ type Item = {
   qr: string;
   submissions: number;
   avgRating: number;
+  taps: number;
 };
 
 export default function CampaignsList({ items }: { items: Item[] }) {
@@ -40,6 +43,7 @@ function Card({ item }: { item: Item }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
+  const isRedirect = item.type === "redirect";
 
   async function copy() {
     await navigator.clipboard.writeText(item.url);
@@ -58,7 +62,7 @@ function Card({ item }: { item: Item }) {
     setBusy(false);
   }
   async function del() {
-    if (!confirm(`Delete "${item.name}"? Submissions are kept.`)) return;
+    if (!confirm(`Delete "${item.name}"? Its data is kept.`)) return;
     setBusy(true);
     await fetch(`/api/admin/campaigns/${item.id}`, { method: "DELETE" });
     router.refresh();
@@ -69,7 +73,18 @@ function Card({ item }: { item: Item }) {
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-display text-base font-semibold text-white">{item.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-base font-semibold text-white">{item.name}</h3>
+            <span
+              className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
+                isRedirect
+                  ? "border-[#A78BFA]/30 bg-[#A78BFA]/10 text-[#C4B5FD]"
+                  : "border-[#FFCC00]/30 bg-[#FFCC00]/10 text-[#FFCC00]"
+              }`}
+            >
+              {isRedirect ? "Redirect" : "Rating"}
+            </span>
+          </div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             <Chip accent>{item.brand}</Chip>
             <Chip>{item.eventId}</Chip>
@@ -93,6 +108,13 @@ function Card({ item }: { item: Item }) {
         </button>
       </div>
 
+      {isRedirect && item.destinationUrl && (
+        <div className="mt-3 flex items-center gap-1.5 text-xs text-[#9AA6B8]">
+          <span className="text-[#6B7688]">redirects to</span>
+          <span className="truncate font-mono text-[#C4B5FD]">{item.destinationUrl}</span>
+        </div>
+      )}
+
       <div className="mt-4 flex gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={item.qr} alt="NFC QR code" className="h-24 w-24 shrink-0 rounded-lg" />
@@ -110,8 +132,14 @@ function Card({ item }: { item: Item }) {
             </button>
           </div>
           <div className="mt-3 flex gap-5">
-            <Stat label="Taps" value={item.submissions.toLocaleString()} />
-            <Stat label="Avg stoke" value={item.avgRating ? item.avgRating.toFixed(1) : "—"} />
+            {isRedirect ? (
+              <Stat label="Taps" value={item.taps.toLocaleString()} />
+            ) : (
+              <>
+                <Stat label="Responses" value={item.submissions.toLocaleString()} />
+                <Stat label="Avg stoke" value={item.avgRating ? item.avgRating.toFixed(1) : "—"} />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -126,22 +154,24 @@ function Card({ item }: { item: Item }) {
           {item.active ? "Active" : "Paused"}
         </span>
         <div className="flex items-center gap-2">
-          <a
-            href={`/api/export?b=${encodeURIComponent(item.brand)}&e=${encodeURIComponent(item.eventId)}${item.cardNumber ? `&c=${encodeURIComponent(item.cardNumber)}` : ""}`}
-            className="flex items-center gap-1 rounded-lg border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
-            title="Download this campaign's submissions"
-          >
-            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            CSV
-          </a>
+          {!isRedirect && (
+            <a
+              href={`/api/export?b=${encodeURIComponent(item.brand)}&e=${encodeURIComponent(item.eventId)}${item.cardNumber ? `&c=${encodeURIComponent(item.cardNumber)}` : ""}`}
+              className="flex items-center gap-1 rounded-lg border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
+              title="Download this campaign's submissions"
+            >
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              CSV
+            </a>
+          )}
           <button
             onClick={toggle}
             disabled={busy}

@@ -28,12 +28,20 @@ export async function POST(req: NextRequest) {
       { status: 422 },
     );
   }
-  const { name, b, e, c } = parsed.data;
+  const { name, type, destinationUrl, b, e, c } = parsed.data;
 
   try {
     const [created] = await db
       .insert(campaigns)
-      .values({ name, brand: b, eventId: e, cardNumber: c, createdBy: admin.id })
+      .values({
+        name,
+        type,
+        destinationUrl: type === "redirect" ? destinationUrl : null,
+        brand: b,
+        eventId: e,
+        cardNumber: c,
+        createdBy: admin.id,
+      })
       .returning();
     return NextResponse.json({ ok: true, campaign: created }, { status: 201 });
   } catch (err: unknown) {
