@@ -154,12 +154,11 @@ function Card({ item }: { item: Item }) {
           {item.active ? "Active" : "Paused"}
         </span>
         <div className="flex items-center gap-2">
-          {!isRedirect && (
-            <a
-              href={`/api/export?b=${encodeURIComponent(item.brand)}&e=${encodeURIComponent(item.eventId)}${item.cardNumber ? `&c=${encodeURIComponent(item.cardNumber)}` : ""}`}
-              className="flex items-center gap-1 rounded-lg border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
-              title="Download this campaign's submissions"
-            >
+          <a
+            href={`/api/export?${isRedirect ? "type=taps&" : ""}b=${encodeURIComponent(item.brand)}&e=${encodeURIComponent(item.eventId)}${item.cardNumber ? `&c=${encodeURIComponent(item.cardNumber)}` : ""}`}
+            className="flex items-center gap-1 rounded-lg border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
+            title={isRedirect ? "Download this campaign's taps" : "Download this campaign's submissions"}
+          >
               <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"
@@ -171,7 +170,6 @@ function Card({ item }: { item: Item }) {
               </svg>
               CSV
             </a>
-          )}
           <button
             onClick={toggle}
             disabled={busy}

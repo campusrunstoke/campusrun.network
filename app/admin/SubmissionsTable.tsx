@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import ExportMenu from "./ExportMenu";
 
 type Row = {
+  kind: "rating" | "tap";
   id: string;
   ts: string;
-  rating: number;
+  rating: number | null;
   email: string | null;
   e: string | null;
   b: string | null;
@@ -36,10 +37,11 @@ export default function SubmissionsTable({
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  async function del(id: string) {
-    if (!confirm("Delete this submission permanently? This cannot be undone.")) return;
+  async function del(id: string, kind: "rating" | "tap") {
+    if (!confirm("Delete this permanently? This cannot be undone.")) return;
     setDeletingId(id);
-    await fetch(`/api/admin/submissions/${id}`, { method: "DELETE" });
+    const endpoint = kind === "tap" ? "taps" : "submissions";
+    await fetch(`/api/admin/${endpoint}/${id}`, { method: "DELETE" });
     router.refresh();
     setDeletingId(null);
   }
@@ -89,6 +91,7 @@ export default function SubmissionsTable({
           <thead>
             <tr className="text-left text-[10px] uppercase tracking-[0.14em] text-[#6B7688]">
               <Th>Time (UTC)</Th>
+              <Th>Type</Th>
               <Th>Stoke</Th>
               <Th>Email</Th>
               <Th>Drop</Th>
@@ -101,7 +104,7 @@ export default function SubmissionsTable({
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-sm text-[#6B7688]">
+                <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6B7688]">
                   {query ? "No matches." : "No submissions yet."}
                 </td>
               </tr>
@@ -115,13 +118,22 @@ export default function SubmissionsTable({
                   {fmtTs(r.ts)}
                 </td>
                 <td className="px-4 py-3">
-                  <Meter n={r.rating} />
+                  <TypeBadge kind={r.kind} />
+                </td>
+                <td className="px-4 py-3">
+                  {r.kind === "rating" && r.rating ? (
+                    <Meter n={r.rating} />
+                  ) : (
+                    <span className="text-[#4A5468]">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {r.email ? (
                     <span className="font-mono text-xs text-[#E5E9F0]">{r.email}</span>
                   ) : (
-                    <span className="text-xs text-[#4A5468]">— no email</span>
+                    <span className="text-xs text-[#4A5468]">
+                      {r.kind === "tap" ? "—" : "— no email"}
+                    </span>
                   )}
                 </td>
                 <td className="px-4 py-3">
@@ -138,9 +150,9 @@ export default function SubmissionsTable({
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
-                    onClick={() => del(r.id)}
+                    onClick={() => del(r.id, r.kind)}
                     disabled={deletingId === r.id}
-                    title="Delete submission"
+                    title="Delete"
                     className="rounded-md border border-white/10 p-1.5 text-[#6B7688] transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-40"
                   >
                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
@@ -164,6 +176,21 @@ export default function SubmissionsTable({
 
 function Th({ children }: { children?: React.ReactNode }) {
   return <th className="whitespace-nowrap px-4 py-3 font-medium">{children}</th>;
+}
+
+function TypeBadge({ kind }: { kind: "rating" | "tap" }) {
+  const isTap = kind === "tap";
+  return (
+    <span
+      className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
+        isTap
+          ? "border-[#A78BFA]/30 bg-[#A78BFA]/10 text-[#C4B5FD]"
+          : "border-[#FFCC00]/30 bg-[#FFCC00]/10 text-[#FFCC00]"
+      }`}
+    >
+      {isTap ? "Tap" : "Rating"}
+    </span>
+  );
 }
 
 function Meter({ n }: { n: number }) {

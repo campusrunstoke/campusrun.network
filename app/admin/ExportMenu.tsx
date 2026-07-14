@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 
+type DataType = "ratings" | "taps";
+
 export default function ExportMenu() {
   const [open, setOpen] = useState(false);
+  const [type, setType] = useState<DataType>("ratings");
   const [e, setE] = useState("");
   const [b, setB] = useState("");
   const [c, setC] = useState("");
 
   function download(filtered: boolean) {
     const params = new URLSearchParams();
+    if (type === "taps") params.set("type", "taps");
     if (filtered) {
       if (e.trim()) params.set("e", e.trim());
       if (b.trim()) params.set("b", b.trim());
@@ -42,18 +46,31 @@ export default function ExportMenu() {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-white/10 bg-[#0E1420] p-3 shadow-2xl">
+            {/* ratings vs taps */}
+            <div className="mb-3 grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
+              {(["ratings", "taps"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={`rounded-md py-1 text-xs font-semibold capitalize transition-colors ${
+                    type === t ? "bg-[#FFCC00] text-[#0A1420]" : "text-[#9AA6B8] hover:text-white"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
             <button
               onClick={() => download(false)}
               className="w-full rounded-lg bg-white/5 px-3 py-2 text-left text-sm text-white transition-colors hover:bg-white/10"
             >
-              Download all submissions
+              Download all {type}
             </button>
 
             <div className="my-3 flex items-center gap-2">
               <span className="h-px flex-1 bg-white/10" />
-              <span className="text-[10px] uppercase tracking-wider text-[#6B7688]">
-                or filter
-              </span>
+              <span className="text-[10px] uppercase tracking-wider text-[#6B7688]">or filter</span>
               <span className="h-px flex-1 bg-white/10" />
             </div>
 

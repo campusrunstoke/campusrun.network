@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { desc, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { submissions } from "@/lib/db/schema";
+import { submissions, taps } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import SubmissionsTable from "./SubmissionsTable";
 import AdminShell from "./AdminShell";
@@ -15,45 +15,64 @@ const LIMIT = 1000;
 export default async function AdminPage() {
   const admin = await requireAdmin();
 
-  const [[stats], raw] = await Promise.all([
+  const [[stats], [tapStats], subRows, tapRows] = await Promise.all([
     db
       .select({
         total: sql<number>`count(*)::int`,
-        avgRating: sql<number>`coalesce(avg(rating), 0)::float`,
+        avgRating: sql<number>`coalesce(avg(rating),0)::float`,
         withEmail: sql<number>`count(*) filter (where email is not null)::int`,
-        today: sql<number>`count(*) filter (where created_at >= date_trunc('day', now()))::int`,
         brands: sql<number>`count(distinct brand)::int`,
         events: sql<number>`count(distinct event_id)::int`,
       })
       .from(submissions),
+    db.select({ total: sql<number>`count(*)::int` }).from(taps),
     db.select().from(submissions).orderBy(desc(submissions.createdAt)).limit(LIMIT),
+    db.select().from(taps).orderBy(desc(taps.createdAt)).limit(LIMIT),
   ]);
 
-  const rows = raw.map((r) => ({
-    id: r.id,
-    ts: r.createdAt.toISOString(),
-    rating: r.rating,
-    email: r.email,
-    e: r.eventId,
-    b: r.brand,
-    c: r.cardNumber,
-    ua: r.userAgent,
-  }));
+  // Unified activity feed: rating submissions + redirect taps, newest first.
+  const rows = [
+    ...subRows.map((r) => ({
+      kind: "rating" as const,
+      id: r.id,
+      ts: r.createdAt.toISOString(),
+      rating: r.rating as number | null,
+      email: r.email,
+      e: r.eventId,
+      b: r.brand,
+      c: r.cardNumber,
+      ua: r.userAgent,
+    })),
+    ...tapRows.map((r) => ({
+      kind: "tap" as const,
+      id: r.id,
+      ts: r.createdAt.toISOString(),
+      rating: null,
+      email: null,
+      e: r.eventId,
+      b: r.brand,
+      c: r.cardNumber,
+      ua: r.userAgent,
+    })),
+  ]
+    .sort((a, b) => (a.ts < b.ts ? 1 : -1))
+    .slice(0, LIMIT);
 
   const emailRate = stats.total ? Math.round((stats.withEmail / stats.total) * 100) : 0;
+  const totalEvents = stats.total + tapStats.total;
 
   return (
     <AdminShell name={admin.name} role={admin.role}>
       <section className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Stat label="Total taps" value={stats.total.toLocaleString()} accent />
+        <Stat label="Ratings" value={stats.total.toLocaleString()} accent />
+        <Stat label="Taps" value={tapStats.total.toLocaleString()} accent />
         <Stat label="Avg stoke" value={stats.avgRating.toFixed(1)} suffix="/5" />
-        <Stat label="Today" value={stats.today.toLocaleString()} />
         <Stat label="With email" value={`${emailRate}%`} />
         <Stat label="Brands" value={stats.brands.toLocaleString()} />
         <Stat label="Drops" value={stats.events.toLocaleString()} />
       </section>
 
-      <SubmissionsTable rows={rows} total={stats.total} shown={rows.length} />
+      <SubmissionsTable rows={rows} total={totalEvents} shown={rows.length} />
     </AdminShell>
   );
 }
