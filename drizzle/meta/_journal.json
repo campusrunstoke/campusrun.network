@@ -29,6 +29,13 @@
       "when": 1783966882262,
       "tag": "0003_yielding_maginty",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784745440142,
+      "tag": "0004_rich_centennial",
+      "breakpoints": true
     }
   ]
 }

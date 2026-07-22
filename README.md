@@ -12,6 +12,33 @@ Whole interaction is built to finish in under 10 seconds on bad festival LTE.
 - Read the data: **`/admin`** (a plain table) or **`/api/export`** (CSV) — both password-gated
 - No accounts, no dashboard, no analytics. A small brick, well laid.
 
+Since then it has also picked up campaigns (`/admin/campaigns`), redirect smart-links
+(`/go`), and brand intake (below).
+
+---
+
+## Brand intake (`/work-with-us`)
+
+A public form for companies who want to work with us. Same palette as the capture page.
+
+- **Public form:** `/work-with-us` — company / name / email required, everything else optional.
+- **Stored in:** its own `leads` table (sales pipeline, not activation telemetry).
+- **Read it:** `/admin/leads` — the **Intake** tab. Filter by status, expand a row for the
+  full inquiry, move it through `new → contacted → qualified → closed`, reply by email, or delete.
+- **CSV:** `/api/export?type=leads` (add `&status=new` to filter).
+- **Email notification:** every new inquiry emails the team over plain SMTP — no paid
+  service. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and
+  `LEAD_NOTIFY_TO` (comma-separated). Leave `SMTP_HOST` blank and notifications are
+  simply off — inquiries are still saved. `Reply-To` is the brand's address, so hitting
+  reply answers them directly.
+
+Mail is sent inside Next's `after()` — it runs once the response is already on its way,
+so a slow or broken mail server can never make the form feel slow or look like it failed.
+The lead is committed to the database before any mail is attempted.
+
+The page inherits the site-wide `noindex`; flip `robots` in
+`app/work-with-us/page.tsx` when it should be findable by search engines.
+
 ---
 
 ## Attribution (the important part)

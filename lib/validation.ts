@@ -66,3 +66,40 @@ export const campaignSchema = z
   });
 
 export type CampaignInput = z.infer<typeof campaignSchema>;
+
+/** Required, trimmed, length-capped free text. */
+const requiredText = (max: number) => z.string().trim().min(1).max(max);
+
+/**
+ * Body accepted by POST /api/leads (the public "work with us" intake form).
+ * Only company / name / email are required — an intake form that interrogates
+ * people converts worse than one that lets them say the minimum and hit send.
+ */
+export const leadSchema = z.object({
+  company: requiredText(160),
+  contactName: requiredText(120),
+  email: z.string().trim().toLowerCase().email().max(254),
+
+  role: optionalText(120),
+  phone: optionalText(40),
+  website: optionalText(2048),
+  interests: z.preprocess(
+    (v) => (Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, 20) : []),
+    z.array(z.string().trim().max(80)),
+  ),
+  campuses: optionalText(500),
+  timeline: optionalText(80),
+  budget: optionalText(80),
+  message: optionalText(5000),
+  heardFrom: optionalText(200),
+
+  // Honeypot — same trick as the capture page.
+  website2: z.string().max(200).optional().nullable(),
+});
+
+export type LeadInput = z.infer<typeof leadSchema>;
+
+/** Body accepted by PATCH /api/admin/leads/[id]. */
+export const leadStatusSchema = z.object({
+  status: z.enum(["new", "contacted", "qualified", "closed"]),
+});

@@ -144,3 +144,51 @@ export const taps = pgTable(
 
 export type Tap = typeof taps.$inferSelect;
 export type NewTap = typeof taps.$inferInsert;
+
+/**
+ * Inbound intake — a brand filling in the "work with us" form. Deliberately its own
+ * table: this is sales pipeline, not activation telemetry, and it has a different
+ * lifecycle (a human works each row) than submissions/taps, which are append-only.
+ */
+export const leadStatusEnum = pgEnum("lead_status", [
+  "new",
+  "contacted",
+  "qualified",
+  "closed",
+]);
+
+export const leads = pgTable(
+  "leads",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+
+    // Required on the form.
+    company: text("company").notNull(),
+    contactName: text("contact_name").notNull(),
+    email: text("email").notNull(), // stored lowercased
+
+    // Optional.
+    role: text("role"),
+    phone: text("phone"),
+    website: text("website"),
+    interests: text("interests").array().notNull().default(sql`'{}'::text[]`),
+    campuses: text("campuses"), // markets / schools they care about
+    timeline: text("timeline"),
+    budget: text("budget"),
+    message: text("message"),
+    heardFrom: text("heard_from"),
+
+    // Pipeline state — the only field admins mutate after the fact.
+    status: leadStatusEnum("status").notNull().default("new"),
+
+    userAgent: text("user_agent"),
+  },
+  (t) => [
+    index("leads_created_at_idx").on(t.createdAt),
+    index("leads_status_idx").on(t.status),
+  ],
+);
+
+export type Lead = typeof leads.$inferSelect;
+export type NewLead = typeof leads.$inferInsert;
