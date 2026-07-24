@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Run — For Brands & Event Organizers</title>
+<style>
+  :root{
+    --gold:#E2A72E;
+    --navy:#1d3a5f;
+    --ink:#191919;
+    --muted:#5f5f5f;
+    --hair:#e6e6e6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:#f3f3f3;}
+  body{
+    font-family:"Avenir Next","Avenir","Futura","Century Gothic","Helvetica Neue",Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    width:8.5in;
+    min-height:11in;
+    margin:0 auto;
+    background:#fff;
+    padding:0.72in 0.72in 0.6in;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* header */
+  .top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid var(--gold);padding-bottom:11px;}
+  .brand{font-size:27px;font-weight:400;letter-spacing:.01em;}
+  .brand b{font-weight:600;}
+  .kicker{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:600;padding-bottom:4px;}
+
+  .lede{margin-top:14px;font-size:13px;color:var(--muted);line-height:1.5;}
+  .lede b{color:var(--ink);font-weight:600;}
+
+  h2{
+    font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+    font-weight:700;margin:17px 0 8px;
+  }
+  .one{
+    font-size:17px;line-height:1.5;font-weight:500;color:var(--ink);
+    border-left:3px solid var(--gold);padding-left:14px;
+  }
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:11px 30px;margin-top:2px;}
+  .pt{font-size:12.5px;line-height:1.55;}
+  .pt .h{font-weight:600;color:var(--navy);}
+  .pt .t{color:#333;}
+
+  ol.steps{list-style:none;counter-reset:s;display:grid;grid-template-columns:1fr 1fr;gap:9px 30px;margin-top:2px;}
+  ol.steps li{counter-increment:s;position:relative;padding-left:29px;font-size:12.5px;line-height:1.5;}
+  ol.steps li::before{
+    content:counter(s);position:absolute;left:0;top:1px;
+    width:20px;height:20px;border-radius:50%;background:var(--gold);color:#fff;
+    font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+  ol.steps b{color:var(--navy);}
+
+  .fits li,.proof li{font-size:12.5px;line-height:1.5;list-style:none;padding-left:17px;position:relative;margin-bottom:5px;}
+  .fits li::before,.proof li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;background:var(--gold);border-radius:50%;}
+  .fits b{color:var(--navy);font-weight:600;}
+
+  .ask{
+    margin-top:16px;background:#fbf4e6;border:1px solid #f0dfb4;border-radius:8px;
+    padding:13px 17px;font-size:13px;line-height:1.5;color:#3a3a3a;
+  }
+  .ask b{color:var(--ink);}
+
+  .foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--hair);
+    display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);}
+  .foot .stoke{color:var(--gold);font-weight:600;letter-spacing:.01em;}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;}
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="top">
+      <div class="brand"><b>campusrun</b>.network</div>
+      <div class="kicker">For brands &amp; event organizers</div>
+    </div>
+
+    <p class="lede"><b>Campus Run turns live events into measured, opted-in audiences.</b> For the brands sampling at your event and the organizers running it, it grows an opted-in list on the spot and proves what the event actually drove.</p>
+
+    <h2>The one sentence</h2>
+    <div class="one">Every giveaway, booth, or connect moment at a live event becomes a tracked touchpoint, so you grow an opted-in list on the spot and see what actually worked that night instead of hoping.</div>
+
+    <h2>Why it works</h2>
+    <div class="row">
+      <div class="pt"><span class="h">Live events become list growth. </span><span class="t">People join the list from their own phone right when they're most engaged, in a single step. Far less friction than a paper card or a form, so far more people actually join.</span></div>
+      <div class="pt"><span class="h">You learn what worked, that night. </span><span class="t">A code unique to each event ties the physical moment to what happens next, so you stop guessing at what an event drove.</span></div>
+      <div class="pt"><span class="h">The list is yours, and everyone opted in. </span><span class="t">Every contact joined by their own hand. That's a clean, consent-first list you own, which beats anything scraped or rented on deliverability and on reputation.</span></div>
+      <div class="pt"><span class="h">One team, tech and boots. </span><span class="t">The same shop builds the software and staffs the event, so the data layer and the people handing out product are never two vendors pointing at each other.</span></div>
+    </div>
+
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><b>Capture.</b> A quick touchpoint at any table, booth, or handout gets someone onto the list from their own phone in one step.</li>
+      <li><b>Opt in.</b> They join the list and answer a question or two, with a quick A/B test if you want it.</li>
+      <li><b>Watch live.</b> Signups, answers, and the best-performing spots stream to a dashboard during the event.</li>
+      <li><b>Attribute.</b> A per-event code shows what the moment drove in the days after, in real numbers.</li>
+    </ol>
+
+    <div class="cols2">
+      <div>
+        <h2>Where it fits your events</h2>
+        <ul class="fits">
+          <li><b>Conferences and trade shows.</b> Capture and measure the room in real time, and hand sponsors the numbers the same night.</li>
+          <li><b>Festivals and campus events.</b> More opt-ins per hour than a folding table, with the follow-up list to match.</li>
+          <li><b>Sampling and product launches.</b> Turn a giveaway into a lasting, opted-in relationship, and prove the reach.</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Proof it's real</h2>
+        <ul class="proof">
+          <li>Piloting at a 3,000-person festival this summer, capturing the gate line with live surveys.</li>
+          <li>Partnered with a Mark Cuban backed startup for a fall campus launch, about 4,000 units across two weeks.</li>
+          <li>Real-time dashboard and consent-first capture already built and running.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ask">
+      <b>If you want to go further:</b> a short call to find the fit, and if it clicks, a low-risk pilot at one event so the numbers speak for themselves. No big commitment to see it work once.
+    </div>
+
+    <div class="foot">
+      <div>Kasey Tarbet &nbsp;·&nbsp; kasey@campusrun.network &nbsp;·&nbsp; campusrun.network</div>
+      <div class="stoke">stop guessing. get stoked</div>
+    </div>
+
+  </div>
+</body>
+</html>
