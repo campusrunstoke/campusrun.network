@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
-// Cards point at /stoked. A bare domain hit lands there too (params just come back null).
+// Cards point at /stoked and /go directly, so they are unaffected by this.
+// A bare domain hit lands on the stoke chart.
 export default function Home() {
-  redirect("/stoked");
+  redirect("/stoke-chart.html");
 }
