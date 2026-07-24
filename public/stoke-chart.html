@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>campusrun.network</title>
+<style>
+  :root {
+    --gold: #E2A72E;
+    --navy: #1d3a5f;
+    --ink: #161616;
+    --muted: #6f6f6f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fff;
+    color: var(--ink);
+    font-family: "Avenir Next", "Avenir", "Futura", "Century Gothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    overflow-x: hidden;
+  }
+
+  .stoke { height: 320vh; position: relative; }
+  .stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .wordmark {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 4.5%;
+    text-align: center;
+    font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    z-index: 5;
+  }
+
+  .scene { position: absolute; inset: 0; transform: translateX(-10px); }
+  .scene svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: translateY(-20px);
+  }
+  .boltfill { fill: var(--gold); }
+  .icon {
+    stroke: var(--navy);
+    stroke-width: 5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity 0.3s ease;
+  }
+
+  .station {
+    position: absolute;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.5s ease;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .station.on { opacity: 1; }
+  .station .big {
+    font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+    font-weight: 500;
+  }
+  .station .small {
+    font-size: clamp(0.82rem, 1.5vw, 1.05rem);
+    color: #2b2b2b;
+  }
+
+  /* tagline shows the whole time; rides up to make room for the bullets */
+  .finale {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 84%;
+    text-align: center;
+    will-change: top;
+  }
+  .finale .tag {
+    font-size: clamp(1.05rem, 2.2vw, 1.55rem);
+    font-weight: 500;
+    margin-bottom: 0.7rem;
+  }
+  .finale ul {
+    list-style: none;
+    display: inline-block;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .finale ul.on { opacity: 1; transform: translateY(0); }
+  .finale li { padding: 0.14rem 0; }
+  .finale li::before { content: "•"; color: var(--gold); margin-right: 0.55rem; }
+  .finale a, .finale .soon {
+    color: #2b2b2b;
+    font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .finale a:hover { color: var(--ink); border-color: var(--gold); }
+  .finale li.gc a { color: var(--gold); font-weight: 600; }
+  .finale li.gc a:hover { color: var(--gold); border-color: var(--gold); }
+  .finale .newtag {
+    display: inline-block;
+    margin-left: 7px;
+    background: var(--gold);
+    color: #fff;
+    font-size: 0.6em;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    vertical-align: middle;
+    animation: newpulse 1.7s ease-in-out infinite;
+  }
+  @keyframes newpulse {
+    0%, 100% { transform: translateY(-1px) scale(1); }
+    50%      { transform: translateY(-1px) scale(1.09); }
+  }
+
+  .hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3.5vh;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    transition: opacity 0.4s ease;
+    animation: bob 2.2s ease-in-out infinite;
+  }
+  .hint.off { opacity: 0; }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(7px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stoke { height: 100vh; }
+    .station { opacity: 1; transform: none; }
+    .finale { top: 76% !important; }
+    .finale ul { opacity: 1; transform: none; }
+    .finale .newtag { animation: none; }
+    .icon { opacity: 0 !important; }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <section class="stoke" id="stoke">
+    <div class="stage">
+      <h1 class="wordmark">campusrun.network</h1>
+
+      <div class="scene">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <!-- bolts start pulled together; outer two spread apart on scroll -->
+          <g id="b1">
+            <polygon class="boltfill" points="38,806 138,522 280,618 268,660 168,594 66,812" />
+          </g>
+          <g id="b2">
+            <polygon class="boltfill" points="668,573 770,285 982,407 970,447 798,357 696,579" />
+          </g>
+          <g id="b3">
+            <polygon class="boltfill" points="1392,490 1518,200 1554,218 1420,498" />
+            <polygon class="boltfill" points="1591,102 1599,263 1457,191" />
+          </g>
+
+          <!-- icon 1: storefront + screen (sits in gap 1 at the start) -->
+          <g class="icon" id="icon1" transform="translate(517,530)">
+            <rect x="0" y="14" width="44" height="74" />
+            <line x1="9" y1="30" x2="20" y2="30" />
+            <line x1="9" y1="46" x2="20" y2="46" />
+            <line x1="9" y1="62" x2="20" y2="62" />
+            <rect x="32" y="50" width="76" height="58" />
+            <path d="M 28 50 L 34 32 L 106 32 L 112 50 Z" />
+            <line x1="47" y1="32" x2="47" y2="50" />
+            <line x1="66" y1="32" x2="66" y2="50" />
+            <line x1="85" y1="32" x2="85" y2="50" />
+            <rect x="62" y="74" width="22" height="34" />
+            <rect x="20" y="118" width="48" height="28" />
+            <line x1="44" y1="146" x2="44" y2="152" />
+            <line x1="30" y1="152" x2="58" y2="152" />
+          </g>
+
+          <!-- icon 2: documents flowing into a database (sits in gap 2 at the start) -->
+          <g class="icon" id="icon2" transform="translate(1012,392)">
+            <rect x="0" y="0" width="30" height="38" />
+            <line x1="6" y1="10" x2="24" y2="10" />
+            <line x1="6" y1="19" x2="24" y2="19" />
+            <line x1="6" y1="28" x2="24" y2="28" />
+            <rect x="49" y="0" width="30" height="38" />
+            <line x1="55" y1="10" x2="73" y2="10" />
+            <line x1="55" y1="19" x2="73" y2="19" />
+            <line x1="55" y1="28" x2="73" y2="28" />
+            <rect x="98" y="0" width="30" height="38" />
+            <line x1="104" y1="10" x2="122" y2="10" />
+            <line x1="104" y1="19" x2="122" y2="19" />
+            <line x1="104" y1="28" x2="122" y2="28" />
+            <line x1="15" y1="46" x2="15" y2="60" />
+            <path d="M 9 54 L 15 61 L 21 54" />
+            <line x1="64" y1="46" x2="64" y2="60" />
+            <path d="M 58 54 L 64 61 L 70 54" />
+            <line x1="113" y1="46" x2="113" y2="60" />
+            <path d="M 107 54 L 113 61 L 119 54" />
+            <ellipse cx="64" cy="80" rx="42" ry="11" />
+            <path d="M 22 80 L 22 128 A 42 11 0 0 0 106 128 L 106 80" />
+            <path d="M 22 96 A 42 11 0 0 0 106 96" />
+            <path d="M 22 112 A 42 11 0 0 0 106 112" />
+          </g>
+        </svg>
+
+        <div class="station s1">
+          <div class="big">Offline-to-online attribution</div>
+          <div class="small">closed loop analytics for live events</div>
+        </div>
+
+        <div class="station s2">
+          <div class="big">Proprietary data you own</div>
+          <div class="small">insights nobody else can replicate</div>
+        </div>
+
+        <div class="finale" id="finale">
+          <div class="tag">stop guessing. get stoked</div>
+          <ul id="bullets">
+            <li class="gc"><a href="/good-company.html">good company <span class="newtag">new!</span></a></li>
+            <li><a href="/brands-organizers.html">for brands</a></li>
+            <li><a href="/brands-organizers.html">for event organizers</a></li>
+            <li><span class="soon">for student clubs and orgs</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hint" id="hint">scroll</div>
+    </div>
+  </section>
+
+<script>
+(function () {
+  var section = document.getElementById('stoke');
+  var b1 = document.getElementById('b1');
+  var b3 = document.getElementById('b3');
+  var icon1 = document.getElementById('icon1');
+  var icon2 = document.getElementById('icon2');
+  var s1 = document.querySelector('.s1');
+  var s2 = document.querySelector('.s2');
+  var finale = document.getElementById('finale');
+  var bullets = document.getElementById('bullets');
+  var hint = document.getElementById('hint');
+
+  var ticking = false;
+
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+  function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  function progress() {
+    var total = section.offsetHeight - window.innerHeight;
+    if (total <= 0) return 1;
+    return clamp01(-section.getBoundingClientRect().top / total);
+  }
+
+  function render() {
+    ticking = false;
+    var p = progress();
+
+    // stage 2: outer bolts spread apart horizontally
+    var s = ease(clamp01(p / 0.5));
+    b1.setAttribute('transform', 'translate(' + 200 * (1 - s) + ',0)');
+    b3.setAttribute('transform', 'translate(' + -230 * (1 - s) + ',0)');
+
+    // icons give way as the gaps open
+    var fade = clamp01(1 - s * 1.8);
+    icon1.style.opacity = fade;
+    icon2.style.opacity = fade;
+
+    // step text reveals into the opened gaps
+    s1.classList.toggle('on', s > 0.8);
+    s2.classList.toggle('on', s > 0.8);
+
+    // stage 3: tagline rides up, bullets appear
+    var u = ease(clamp01((p - 0.55) / 0.25));
+    finale.style.top = (84 - 8 * u) + '%';
+    bullets.classList.toggle('on', p > 0.8);
+
+    hint.classList.toggle('off', p > 0.04);
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(render);
+    }
+  }
+
+  // anchor the step text to the chart's own coordinate system, centered in each gap
+  var S1C = [491, 632];   // svg-space center of gap 1 text
+  var S2C = [1187, 455];  // svg-space center of gap 2 text
+  function place() {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var sc = Math.min(vw / 1600, vh / 900);
+    var ox = (vw - 1600 * sc) / 2;
+    var oy = (vh - 900 * sc) / 2;
+    s1.style.left = (ox + S1C[0] * sc) + 'px';
+    s1.style.top  = (oy + S1C[1] * sc - 20) + 'px';
+    s2.style.left = (ox + S2C[0] * sc) + 'px';
+    s2.style.top  = (oy + S2C[1] * sc - 20) + 'px';
+  }
+  place();
+  window.addEventListener('resize', place, { passive: true });
+
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (!mq.matches) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    render();
+  } else {
+    s1.classList.add('on');
+    s2.classList.add('on');
+    bullets.classList.add('on');
+    b1.setAttribute('transform', 'translate(0,0)');
+    b3.setAttribute('transform', 'translate(0,0)');
+  }
+})();
+</script>
+</body>
+</html>
