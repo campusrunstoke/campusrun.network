@@ -134,11 +134,19 @@ export const taps = pgTable(
     eventId: text("event_id"),
     brand: text("brand"),
     cardNumber: text("card_number"),
+    clickId: text("click_id"), // cr_… — unique per tap, echoed to the client as ?cr_cid=
+    referrer: text("referrer"), // Referer header (usually empty on NFC taps)
+    city: text("city"), // x-vercel-ip-city, decoded — prod only
+    region: text("region"), // x-vercel-ip-country-region
+    country: text("country"), // x-vercel-ip-country (ISO 3166-1 alpha-2)
     userAgent: text("user_agent"),
   },
   (t) => [
     index("taps_created_at_idx").on(t.createdAt),
     index("taps_brand_event_idx").on(t.brand, t.eventId),
+    // Non-unique on purpose: a unique-violation would be swallowed by /go's
+    // catch and silently drop the tap. btree is enough for conversion joins.
+    index("taps_click_id_idx").on(t.clickId),
   ],
 );
 
