@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
   // Pin the workspace root — there are other lockfiles higher up the tree
   // (home dir) and Next would otherwise guess wrong.
   turbopack: { root: import.meta.dirname },
+  // TEMPORARY (remove with /api/admin/migrate): bundle the drizzle .sql files
+  // into the one-off migration endpoint's serverless function.
+  outputFileTracingIncludes: {
+    "/api/admin/migrate": ["./drizzle/**"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

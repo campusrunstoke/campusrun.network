@@ -36,6 +36,13 @@
       "when": 1784745440142,
       "tag": "0004_rich_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784952874073,
+      "tag": "0005_absurd_network",
+      "breakpoints": true
     }
   ]
 }
