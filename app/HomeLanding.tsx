@@ -131,13 +131,13 @@ function Hero({
       <div className="absolute inset-0 z-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/img/hero-activation.jpg"
+          src="/uploads/IMG_5792.jpg"
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-50"
+          className="h-full w-full object-cover opacity-100"
           style={{
             objectPosition: "center 34%",
-            filter: "blur(30px) saturate(1.15)",
+            filter: "blur(60px) saturate(1.15)",
             transform: "scale(1.2)",
           }}
         />
@@ -145,7 +145,7 @@ function Hero({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(120deg,rgba(0,32,50,.94) 0%,rgba(0,32,50,.66) 52%,rgba(0,32,50,.42) 100%)",
+              "linear-gradient(120deg,rgba(0,32,50,.41) 0%,rgba(0,32,50,.29) 52%,rgba(0,32,50,.18) 100%)",
           }}
         />
       </div>
@@ -275,8 +275,28 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
 
 function Console({ onBackTop }: { onBackTop: () => void }) {
   return (
-    <div className="flex min-h-dvh items-center">
-      <div className="mx-auto grid w-full max-w-[1120px] grid-cols-1 items-center gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
+    <div className="relative flex min-h-dvh items-center overflow-hidden">
+      {/* Blurred photo over a white scrim, behind the console content. */}
+      <div className="absolute inset-0 z-0">
+        <div
+          className="absolute inset-0"
+          style={{ background: "rgba(255,255,255,.25)" }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/uploads/IMG_3419.JPG"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{
+            objectPosition: "center 87%",
+            transform: "scale(1)",
+            opacity: 0.66,
+            filter: "blur(15px) saturate(1) grayscale(0.04)",
+          }}
+        />
+      </div>
+      <div className="relative z-[1] mx-auto grid w-full max-w-[1120px] grid-cols-1 items-center gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
         <div>
           <div className="mb-6 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
             <Icon.Scan className="text-ink" size={15} />
