@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { SiteFooter } from "./SiteChrome";
 
 /**
  * Marketing homepage — the "Reveal" scroll.
@@ -77,20 +78,29 @@ export default function HomeLanding() {
         <section className="relative min-h-dvh overflow-hidden bg-white">
           {console_}
         </section>
+        <SiteFooter tagline="stop guessing. get stoked" />
       </div>
     );
   }
 
   return (
-    <div style={{ height: "220vh" }}>
-      <div className="fixed inset-0 z-[1] overflow-hidden bg-white">{console_}</div>
-      <div
-        ref={frontRef}
-        className="fixed inset-0 z-[2] overflow-hidden bg-ink"
-        style={{ willChange: "transform" }}
-      >
-        {hero}
+    <div>
+      {/* The reveal region. The console is `sticky` (not fixed), so once the hero
+          has slid off and you scroll past it, the console scrolls up normally and
+          the footer below flows into view — the reveal itself is unchanged. */}
+      <div className="relative" style={{ height: "220vh" }}>
+        <div className="sticky top-0 z-[1] h-dvh overflow-hidden bg-white">
+          {console_}
+        </div>
+        <div
+          ref={frontRef}
+          className="fixed inset-0 z-[2] overflow-hidden bg-ink"
+          style={{ willChange: "transform" }}
+        >
+          {hero}
+        </div>
       </div>
+      <SiteFooter tagline="stop guessing. get stoked" />
     </div>
   );
 }

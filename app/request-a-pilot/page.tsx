@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SiteFooter } from "../SiteChrome";
 import RequestPilotForm from "./RequestPilotForm";
 
 // Public lead-capture page — override the layout's default noindex.
@@ -10,5 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default function RequestPilotPage() {
-  return <RequestPilotForm />;
+  return (
+    <>
+      <RequestPilotForm />
+      <SiteFooter tagline="stop guessing. get stoked" />
+    </>
+  );
 }
