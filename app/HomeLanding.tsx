@@ -225,11 +225,11 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
           </span>
         </div>
         <div className="hidden items-center gap-[26px] text-[14px] font-medium text-ink md:flex">
-          <a href="/brands-organizers.html">For brands</a>
+          <Link href="/for-brands">For brands</Link>
           <button type="button" onClick={onHowItWorks} className="cursor-pointer">
             How it works
           </button>
-          <a href="/good-company.html">Good company</a>
+          <Link href="/good-company">Good company</Link>
         </div>
         <div className="flex items-center gap-4">
           <Link
