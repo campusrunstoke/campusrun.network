@@ -29,20 +29,33 @@ const PILOT = "/request-a-pilot";
 
 export default function HomeLanding() {
   const [reduced, setReduced] = useState(false);
+  const [narrow, setNarrow] = useState(false);
   const frontRef = useRef<HTMLDivElement>(null);
 
-  // Detect reduced-motion preference (and react to changes).
+  // The scroll reveal is a desktop enhancement. On phones/tablets the two panels'
+  // content is taller than one viewport, so a fixed one-viewport reveal would clip
+  // it and leak the ink background around the white panel. There — and under
+  // prefers-reduced-motion — we fall back to a plain stacked scroll.
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const set = () => setReduced(mq.matches);
-    set();
-    mq.addEventListener("change", set);
-    return () => mq.removeEventListener("change", set);
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const size = window.matchMedia("(max-width: 1023px)");
+    const setMotion = () => setReduced(motion.matches);
+    const setSize = () => setNarrow(size.matches);
+    setMotion();
+    setSize();
+    motion.addEventListener("change", setMotion);
+    size.addEventListener("change", setSize);
+    return () => {
+      motion.removeEventListener("change", setMotion);
+      size.removeEventListener("change", setSize);
+    };
   }, []);
+
+  const stacked = reduced || narrow;
 
   // The reveal transform. rAF-guarded so scroll writes stay off the critical path.
   useEffect(() => {
-    if (reduced) return;
+    if (stacked) return;
     let ticking = false;
     const apply = () => {
       ticking = false;
@@ -62,22 +75,20 @@ export default function HomeLanding() {
     window.addEventListener("scroll", onScroll, { passive: true });
     apply();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [reduced]);
+  }, [stacked]);
 
   const toConsole = () =>
     window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
   const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const hero = <Hero onSeeHow={toConsole} reduced={reduced} />;
+  const hero = <Hero onSeeHow={toConsole} reduced={stacked} />;
   const console_ = <Console onBackTop={toTop} />;
 
-  if (reduced) {
+  if (stacked) {
     return (
       <div>
         <section className="relative min-h-dvh overflow-hidden bg-ink">{hero}</section>
-        <section className="relative min-h-dvh overflow-hidden bg-white">
-          {console_}
-        </section>
+        <section className="relative bg-white">{console_}</section>
         <SiteFooter tagline="stop guessing. get stoked" />
       </div>
     );
