@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/brands-organizers.html", destination: "/for-brands", permanent: true },
       { source: "/good-company.html", destination: "/good-company", permanent: true },
+      { source: "/privacy.html", destination: "/privacy", permanent: true },
+      { source: "/terms.html", destination: "/terms", permanent: true },
     ];
   },
 };
