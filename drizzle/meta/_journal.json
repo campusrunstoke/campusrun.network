@@ -36,6 +36,20 @@
       "when": 1784745440142,
       "tag": "0004_rich_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789409492904,
+      "tag": "0005_late_captain_britain",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789410021186,
+      "tag": "0006_new_blue_shield",
+      "breakpoints": true
     }
   ]
 }
