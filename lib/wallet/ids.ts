@@ -1,13 +1,28 @@
-import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import { randomBytes, createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { DeviceType } from "./types";
 
 /**
- * Serial numbers and auth tokens are random and non-guessable so the public routes
- * that key off them (/r/{serial}, /redeem/{serial}, the Apple pass endpoints) can't
- * be enumerated. 16 bytes = 128 bits of entropy.
+ * Serial numbers are random and non-guessable so the public routes that key off them
+ * (/r/{serial}, /redeem/{serial}, the Apple pass endpoints) can't be enumerated.
+ * 16 bytes = 128 bits of entropy.
  */
 export const newSerial = (): string => randomBytes(16).toString("hex"); // 32 chars
-export const newAuthToken = (): string => randomBytes(24).toString("base64url"); // >16 chars
+
+/**
+ * The per-pass authenticationToken Apple echoes back on every web-service call.
+ * Derived as HMAC(secret, serial) rather than stored, so a RE-TAP can rebuild and
+ * re-sign the identical pass (a festival double-tap must still hand over the pass),
+ * while nobody can forge a token without the server secret. We still persist a hash
+ * so validation is a plain compare. Falls back to a random token if no secret is
+ * configured (then re-taps serve the web coupon instead).
+ */
+export function passAuthToken(serial: string): string {
+  const secret = process.env.WALLET_TOKEN_SECRET;
+  if (!secret) return randomBytes(24).toString("base64url");
+  return createHmac("sha256", secret).update(serial).digest("base64url");
+}
+
+export const authTokenDerivable = (): boolean => Boolean(process.env.WALLET_TOKEN_SECRET);
 
 export const hashToken = (token: string): string =>
   createHash("sha256").update(token).digest("hex");

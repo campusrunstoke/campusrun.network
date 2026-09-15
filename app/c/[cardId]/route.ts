@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { walletCards, walletCampaigns } from "@/lib/db/schema";
 import { detectDevice } from "@/lib/wallet/ids";
-import { getOrCreatePass, logEvent } from "@/lib/wallet/events";
+import { campaignLinks, getOrCreatePass, logEvent } from "@/lib/wallet/events";
 import { buildPass } from "@/lib/wallet/pass";
 import { walletConfigured } from "@/lib/wallet/config";
 import { siteUrl } from "@/lib/campaigns";
@@ -66,10 +66,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cardId: str
 
   if (canServePkpass) {
     try {
-      // Only a fresh mint has the plaintext token needed to sign. On a re-tap we can't
-      // re-sign (we only keep the hash), so fall back to the web coupon — same tracking.
+      // With WALLET_TOKEN_SECRET set the token is derivable, so a re-tap re-signs the
+      // same pass (double-taps still get the Wallet pass). Without it, only the first
+      // tap can sign; later taps fall back to the web coupon — same tracking either way.
       if (!authToken) return webCoupon(serial);
-      const buffer = await buildPass({ serial, cardId }, campaign, authToken);
+      const links = await campaignLinks(campaignId);
+      const buffer = await buildPass({ serial, cardId }, campaign, authToken, links);
       return new Response(new Uint8Array(buffer), {
         status: 200,
         headers: {

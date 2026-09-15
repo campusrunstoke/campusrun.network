@@ -103,3 +103,53 @@ export type LeadInput = z.infer<typeof leadSchema>;
 export const leadStatusSchema = z.object({
   status: z.enum(["new", "contacted", "qualified", "closed"]),
 });
+
+/** Body accepted by POST /api/wallet/redeem (a coupon redemption, §5). */
+export const redeemSchema = z.object({
+  serial: z.string().trim().min(1).max(128),
+  method: z.enum(["staff_scan", "receipt"]),
+  storeId: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : null),
+    z.string().uuid().nullable(),
+  ),
+  storeName: optionalText(160),
+  amount: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+    z.number().nonnegative().max(100000).nullable(),
+  ),
+  pin: optionalText(32),
+});
+
+export type RedeemInput = z.infer<typeof redeemSchema>;
+
+/** Body accepted by POST /api/admin/wallet/campaigns. */
+export const walletCampaignSchema = z.object({
+  brand: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(120),
+  venue: optionalText(160),
+  cardCount: z.coerce.number().int().min(0).max(5000).default(0),
+  cardPrefix: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1)
+    .max(40)
+    .regex(/^[a-z0-9._-]+$/, "use letters, numbers, and - _ . only"),
+  links: z
+    .array(
+      z.object({
+        action: z.enum(["map", "website", "video", "shop"]),
+        label: optionalText(80),
+        destination: z
+          .string()
+          .trim()
+          .url()
+          .max(2048)
+          .refine((u) => /^https?:\/\//i.test(u), "must start with http:// or https://"),
+      }),
+    )
+    .max(4)
+    .default([]),
+});
+
+export type WalletCampaignInput = z.infer<typeof walletCampaignSchema>;

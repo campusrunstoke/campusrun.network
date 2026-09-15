@@ -5,6 +5,7 @@ import { walletCampaigns } from "@/lib/db/schema";
 import { authenticatePass } from "@/lib/wallet/apple-auth";
 import { buildPass } from "@/lib/wallet/pass";
 import { walletConfigured } from "@/lib/wallet/config";
+import { campaignLinks } from "@/lib/wallet/events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,8 @@ export async function GET(req: NextRequest, ctx: { params: Params }) {
   if (!campaign) return new NextResponse(null, { status: 404 });
 
   try {
-    const buffer = await buildPass(pass, campaign, token);
+    const links = await campaignLinks(campaign.id);
+    const buffer = await buildPass(pass, campaign, token, links);
     return new Response(new Uint8Array(buffer), {
       status: 200,
       headers: {

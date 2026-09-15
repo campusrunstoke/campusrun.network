@@ -84,6 +84,13 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
         </div>
       )}
 
+      <a
+        href={`/receipt/${serial}`}
+        className="mt-6 text-center text-sm font-medium text-ink underline underline-offset-4"
+      >
+        Already bought it? Tell us where →
+      </a>
+
       <p className="mt-auto pt-10 text-center text-xs leading-relaxed text-muted">
         Campus Run · one tap, zero friction.
       </p>

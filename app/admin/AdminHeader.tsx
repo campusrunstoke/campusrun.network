@@ -8,6 +8,7 @@ const NAV = [
   { href: "/admin", label: "Submissions" },
   { href: "/admin/campaigns", label: "Campaigns" },
   { href: "/admin/leads", label: "Intake" },
+  { href: "/admin/wallet", label: "Wallet" },
 ];
 
 export default function AdminHeader({ name, role }: { name: string; role: string }) {

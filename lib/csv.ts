@@ -1,4 +1,4 @@
-import type { Lead, Submission, Tap } from "./db/schema";
+import type { Lead, Submission, Tap, WalletEvent } from "./db/schema";
 
 const COLUMNS: { key: keyof Submission; header: string }[] = [
   { key: "id", header: "id" },
@@ -68,5 +68,29 @@ export function leadsToCsv(rows: Lead[]): string {
       return escapeCell(Array.isArray(v) ? v.join("; ") : v);
     }).join(","),
   );
+  return [header, ...lines].join("\n") + "\n";
+}
+
+/** Raw wallet events (§6 "CSV export of the raw events table") — one row per funnel hop. */
+const WALLET_COLUMNS: { key: keyof WalletEvent; header: string }[] = [
+  { key: "createdAt", header: "timestamp" },
+  { key: "type", header: "event" },
+  { key: "cardId", header: "card_id" },
+  { key: "passSerial", header: "pass_serial" },
+  { key: "deviceType", header: "device" },
+  { key: "action", header: "action_type" },
+  { key: "destination", header: "destination" },
+  { key: "storeName", header: "store" },
+  { key: "method", header: "redemption_method" },
+  { key: "amount", header: "amount" },
+  { key: "deviceLibraryId", header: "device_library_id" },
+  { key: "userAgent", header: "user_agent" },
+  { key: "campaignId", header: "campaign_id" },
+  { key: "id", header: "id" },
+];
+
+export function walletEventsToCsv(rows: WalletEvent[]): string {
+  const header = WALLET_COLUMNS.map((c) => c.header).join(",");
+  const lines = rows.map((row) => WALLET_COLUMNS.map((c) => escapeCell(row[c.key])).join(","));
   return [header, ...lines].join("\n") + "\n";
 }

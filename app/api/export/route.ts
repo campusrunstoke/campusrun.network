@@ -1,8 +1,8 @@
 import { and, desc, eq, type SQL } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { leads, submissions, taps } from "@/lib/db/schema";
-import { leadsToCsv, submissionsToCsv, tapsToCsv } from "@/lib/csv";
+import { leads, submissions, taps, walletEvents } from "@/lib/db/schema";
+import { leadsToCsv, submissionsToCsv, tapsToCsv, walletEventsToCsv } from "@/lib/csv";
 import { getCurrentAdmin } from "@/lib/auth/session";
 
 // Node runtime for postgres.js. Gated by the admin session.
@@ -31,6 +31,20 @@ export async function GET(req: NextRequest) {
 
   const sp = req.nextUrl.searchParams;
   const type = sp.get("type");
+
+  // Wallet funnel events, scoped to one campaign (§8 "hand a brand their own slice").
+  if (type === "wallet") {
+    const campaign = sp.get("campaign")?.trim();
+    if (!campaign || !/^[0-9a-f-]{36}$/i.test(campaign)) {
+      return NextResponse.json({ ok: false, error: "campaign required" }, { status: 422 });
+    }
+    const rows = await db
+      .select()
+      .from(walletEvents)
+      .where(eq(walletEvents.campaignId, campaign))
+      .orderBy(desc(walletEvents.createdAt));
+    return csvResponse(walletEventsToCsv(rows), `campusrun-wallet-${campaign.slice(0, 8)}.csv`);
+  }
 
   // Intake leads are their own shape (no e/b/c attribution) — handled separately.
   if (type === "leads") {
