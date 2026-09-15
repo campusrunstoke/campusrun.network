@@ -1,6 +1,6 @@
 {
-  "id": "cddffa46-d241-429c-a3af-afefed6a52ad",
-  "prevId": "53d4e67f-3dca-457f-9192-76b207b3e6c6",
+  "id": "26ebbb0f-25d2-4632-90d2-d338fb4a5308",
+  "prevId": "7be6ec2f-8340-4804-9452-6b16d92a4b2c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -819,6 +819,36 @@
           "primaryKey": false,
           "notNull": false
         },
+        "click_id": {
+          "name": "click_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "referrer": {
+          "name": "referrer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "user_agent": {
           "name": "user_agent",
           "type": "text",
@@ -853,6 +883,21 @@
             },
             {
               "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "taps_click_id_idx": {
+          "name": "taps_click_id_idx",
+          "columns": [
+            {
+              "expression": "click_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

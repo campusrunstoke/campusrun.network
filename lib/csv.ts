@@ -32,6 +32,11 @@ const TAP_COLUMNS: { key: keyof Tap; header: string }[] = [
   { key: "eventId", header: "event (e)" },
   { key: "brand", header: "brand (b)" },
   { key: "cardNumber", header: "card (c)" },
+  { key: "clickId", header: "click_id" },
+  { key: "referrer", header: "referrer" },
+  { key: "city", header: "city" },
+  { key: "region", header: "region" },
+  { key: "country", header: "country" },
   { key: "userAgent", header: "user_agent" },
 ];
 

@@ -93,6 +93,10 @@ export default function NewCampaignForm() {
             onChange={setDest}
             placeholder="https://www.redbull.com"
           />
+          <p className="mt-1.5 text-[11px] leading-snug text-[#6B7688]">
+            Each tap auto-appends utm_source/medium/campaign + a unique cr_cid before
+            redirecting. Any utm_ params you bake into the URL here are kept.
+          </p>
         </div>
       )}
 

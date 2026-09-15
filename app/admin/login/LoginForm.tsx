@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * Admin sign-in card. Same design language as the /request-a-pilot form —
+ * white card on the blurred blue field, ink inputs, ink action. Gold appears
+ * only as the small "ops console" status dot (marks the live/authorized surface).
+ */
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -36,85 +41,68 @@ export default function LoginForm() {
   }
 
   return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#070B14] px-6 text-[#E5E9F0]">
-      <Backdrop />
+    <div
+      className="w-full max-w-[420px] rounded-2xl bg-white px-6 pb-9 pt-9 sm:px-10"
+      style={{ boxShadow: "0 40px 90px rgba(0,20,32,.5)" }}
+    >
+      <div className="mb-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+        <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+        Ops console
+      </div>
+      <h1 className="m-0 font-display text-[28px] font-bold tracking-[-0.02em] text-ink">
+        Sign in
+      </h1>
+      <p className="mb-7 mt-1.5 text-[14px] leading-[1.5] text-muted">
+        Campus Run team access.
+      </p>
 
-      <div className="relative z-10 w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#9AA6B8]">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FFCC00] opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FFCC00]" />
-            </span>
-            Ops Console
-          </div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-white">
-            CAMPUS RUN
-          </h1>
-        </div>
-
-        <form
-          onSubmit={submit}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 shadow-2xl backdrop-blur-xl"
-        >
-          <label className="mb-1.5 block text-xs font-medium text-[#9AA6B8]">Email</label>
+      <form onSubmit={submit} className="flex flex-col gap-[18px]">
+        <label className="block">
+          <span className="mb-2 block text-[14px] font-semibold text-ink">Email</span>
           <input
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="mb-4 h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm text-white outline-none transition-colors placeholder:text-[#5A6577] focus:border-[#FFCC00]/60 focus:bg-white/[0.07]"
             placeholder="you@campusrun.network"
+            className="w-full rounded-lg border border-line bg-white px-3.5 py-3 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
           />
+        </label>
 
-          <label className="mb-1.5 block text-xs font-medium text-[#9AA6B8]">Password</label>
+        <label className="block">
+          <span className="mb-2 block text-[14px] font-semibold text-ink">Password</span>
           <input
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm text-white outline-none transition-colors placeholder:text-[#5A6577] focus:border-[#FFCC00]/60 focus:bg-white/[0.07]"
-            placeholder="••••••••••"
+            className="w-full rounded-lg border border-line bg-white px-3.5 py-3 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
           />
+        </label>
 
-          {error && (
-            <p className="mt-4 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={status === "submitting"}
-            className="mt-6 h-11 w-full rounded-xl bg-[#FFCC00] font-display text-sm font-bold text-[#0A1420] transition-all hover:bg-[#FFD633] active:scale-[0.99] disabled:opacity-60"
+        {error && (
+          <div
+            className="rounded-lg px-3.5 py-2.5 text-[13px]"
+            style={{ background: "#fdeceb", color: "#b21e15" }}
           >
-            {status === "submitting" ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
+            {error}
+          </div>
+        )}
 
-        <p className="mt-6 text-center text-[11px] text-[#5A6577]">
-          Authorized personnel only · Campus Run
-        </p>
-      </div>
-    </main>
-  );
-}
+        <button
+          type="submit"
+          disabled={status === "submitting"}
+          className="mt-1 w-full rounded-lg bg-ink py-[15px] text-[15px] font-semibold text-white transition-colors hover:bg-ink-deep disabled:opacity-60"
+        >
+          {status === "submitting" ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
 
-function Backdrop() {
-  return (
-    <>
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage:
-            "linear-gradient(#1C2636 1px, transparent 1px), linear-gradient(90deg, #1C2636 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
-        }}
-      />
-      <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-[#FFCC00]/20 blur-[130px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-[#22D3EE]/10 blur-[130px]" />
-    </>
+      <p className="mt-6 text-center text-[12px] text-muted">
+        Authorized personnel only · Campus Run
+      </p>
+    </div>
   );
 }
