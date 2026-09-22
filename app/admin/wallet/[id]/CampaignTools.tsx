@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Card = { id: string; url: string; active: boolean; qr: string | null };
+type Card = { id: string; url: string; active: boolean; qr: string | null; serial: string | null; redeemed: boolean };
 type LinkRow = { action: string; destination: string };
 type Store = { id: string; name: string; hasPin: boolean };
 
@@ -66,8 +66,9 @@ export default function CampaignTools({
           </button>
         </div>
         <p className="mb-3 text-xs text-[#6B7688]">
-          Each URL is what KC encodes on the NFC chip. Hit QR to see the code that prints on
-          the back of that card — scanning it does exactly what tapping the chip does.
+          Each URL is what KC encodes on the NFC chip; QR shows the code that prints on the back.
+          Once a card has been tapped, <b className="text-[#9AA6B8]">Coupon</b> is what the student got and{" "}
+          <b className="text-[#9AA6B8]">Redeem</b> is the cashier’s page for it.
         </p>
         {cards.length === 0 ? (
           <p className="text-sm text-[#6B7688]">No cards minted yet.</p>
@@ -83,6 +84,32 @@ export default function CampaignTools({
                 >
                   {copied === c.id ? "✓" : "Copy"}
                 </button>
+                {c.serial && (
+                  <>
+                    <a
+                      href={`/coupon/${c.serial}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="The coupon this card handed out"
+                      className="shrink-0 rounded-md border border-white/10 px-2 py-1 text-[11px] text-[#9AA6B8] hover:text-white"
+                    >
+                      Coupon
+                    </a>
+                    <a
+                      href={`/redeem/${c.serial}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={c.redeemed ? "Already redeemed" : "What the cashier sees after scanning"}
+                      className={`shrink-0 rounded-md border px-2 py-1 text-[11px] transition-colors ${
+                        c.redeemed
+                          ? "border-white/10 text-[#5A6577]"
+                          : "border-[#FFCC00]/30 text-[#FFCC00] hover:bg-[#FFCC00]/10"
+                      }`}
+                    >
+                      {c.redeemed ? "Redeemed ✓" : "Redeem"}
+                    </a>
+                  </>
+                )}
                 {c.qr && (
                   <button
                     onClick={() => setQrCard(qrCard?.id === c.id ? null : c)}

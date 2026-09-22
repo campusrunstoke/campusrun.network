@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { walletCampaigns, walletCards, walletLinks, walletStores } from "@/lib/db/schema";
+import { passes, walletCampaigns, walletCards, walletLinks, walletStores } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import {
   campaignFunnel,
@@ -39,7 +39,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
   const [campaign] = await db.select().from(walletCampaigns).where(eq(walletCampaigns.id, id)).limit(1);
   if (!campaign) notFound();
 
-  const [funnel, devices, actions, stores, methods, byHour, byDow, installs, series, events, cards, links, storeRows] =
+  const [funnel, devices, actions, stores, methods, byHour, byDow, installs, series, events, cards, links, storeRows, passRows] =
     await Promise.all([
       campaignFunnel(id),
       deviceSplit(id),
@@ -54,6 +54,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       db.select().from(walletCards).where(eq(walletCards.campaignId, id)).orderBy(walletCards.id),
       db.select().from(walletLinks).where(eq(walletLinks.campaignId, id)),
       db.select().from(walletStores).where(eq(walletStores.campaignId, id)).orderBy(desc(walletStores.createdAt)),
+      db.select().from(passes).where(eq(passes.campaignId, id)),
     ]);
   const conv = conversions(funnel);
 
@@ -76,12 +77,21 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       ),
     ),
   );
-  const cardRows = cards.map((c) => ({
-    id: c.id,
-    url: cardUrl(c.id),
-    active: c.active,
-    qr: qrByCard.get(c.id) ?? null,
-  }));
+  // A card only has a pass once someone taps it. Surfacing the pass's coupon and redeem
+  // links here is what lets you test the cashier flow (and look one up for support) —
+  // in the field the cashier never types it, they scan the barcode that encodes it.
+  const passByCard = new Map(passRows.map((p) => [p.cardId, p]));
+  const cardRows = cards.map((c) => {
+    const pass = passByCard.get(c.id);
+    return {
+      id: c.id,
+      url: cardUrl(c.id),
+      active: c.active,
+      qr: qrByCard.get(c.id) ?? null,
+      serial: pass?.serial ?? null,
+      redeemed: Boolean(pass?.redeemedAt),
+    };
+  });
   const totalTaps = devices.reduce((s, d) => s + d.count, 0);
 
   return (
