@@ -4,7 +4,6 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { walletCampaigns, walletCards, walletStores } from "@/lib/db/schema";
 import { getCurrentAdmin } from "@/lib/auth/session";
-import { hashPassword } from "@/lib/auth/password";
 import { mintCardIds } from "@/lib/wallet/cards";
 
 export const runtime = "nodejs";
@@ -26,6 +25,10 @@ const patchSchema = z.object({
       name: z.string().trim().min(1).max(120),
       pin: z.string().trim().max(32).optional(),
     })
+    .optional(),
+  // Change or clear an existing store's PIN (empty string clears it).
+  setStorePin: z
+    .object({ storeId: z.string().uuid(), pin: z.string().trim().max(32) })
     .optional(),
 });
 
@@ -57,8 +60,16 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     await db.insert(walletStores).values({
       campaignId: id,
       name: d.addStore.name,
-      pinHash: d.addStore.pin ? await hashPassword(d.addStore.pin) : null,
+      pin: d.addStore.pin || null,
     });
+  }
+
+  if (d.setStorePin) {
+    // Setting a new PIN also clears any legacy hash, so the readable one is authoritative.
+    await db
+      .update(walletStores)
+      .set({ pin: d.setStorePin.pin || null, pinHash: null })
+      .where(eq(walletStores.id, d.setStorePin.storeId));
   }
 
   return NextResponse.json({ ok: true });

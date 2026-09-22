@@ -1,0 +1,1 @@
+ALTER TABLE "wallet_stores" ADD COLUMN "pin" text;

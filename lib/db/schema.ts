@@ -371,7 +371,11 @@ export const walletStores = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     campaignId: uuid("campaign_id").references(() => walletCampaigns.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    pinHash: text("pin_hash"), // optional staff PIN, argon2-hashed
+    // A shared 4-digit code the whole shift uses, readable by signed-in admins so they
+    // can tell staff what it is. Deliberately NOT hashed: it's an operational code, not
+    // a credential, and a hashed one is unusable (you could never look it up again).
+    pin: text("pin"),
+    pinHash: text("pin_hash"), // legacy argon2 rows; verification still falls back to this
     active: boolean("active").notNull().default(true),
   },
   (t) => [index("wallet_stores_campaign_idx").on(t.campaignId)],

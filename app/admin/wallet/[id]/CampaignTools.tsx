@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 type Card = { id: string; url: string; active: boolean; qr: string | null; serial: string | null; redeemed: boolean };
 type LinkRow = { action: string; destination: string };
-type Store = { id: string; name: string; hasPin: boolean };
+type Store = { id: string; name: string; pin: string | null; legacyPin: boolean };
 
 export default function CampaignTools({
   campaignId,
@@ -27,6 +27,8 @@ export default function CampaignTools({
   const [qrCard, setQrCard] = useState<Card | null>(null);
   const [mintPrefix, setMintPrefix] = useState(cards[0]?.id.split("-")[0] ?? "");
   const [mintCount, setMintCount] = useState("50");
+  const [editPinId, setEditPinId] = useState<string | null>(null);
+  const [editPinVal, setEditPinVal] = useState("");
   const [storeName, setStoreName] = useState("");
   const [storePin, setStorePin] = useState("");
 
@@ -195,14 +197,67 @@ export default function CampaignTools({
           <h2 className="mb-1 font-display text-sm font-semibold text-white">Stores</h2>
           <p className="mb-3 text-xs text-[#6B7688]">
             For staff redemption: the cashier scans the pass barcode with their phone camera,
-            picks their store once, confirms. A PIN stops students self-redeeming.
+            picks their store once, confirms. The PIN is a shared code you give that store&apos;s
+            staff — it stops students self-redeeming. Visible here so you can hand it over.
           </p>
           {stores.length > 0 && (
-            <ul className="mb-3 space-y-2 text-xs">
+            <ul className="mb-3 divide-y divide-white/[0.06] text-xs">
               {stores.map((s) => (
-                <li key={s.id} className="flex items-center gap-2 text-[#C3CBD9]">
-                  {s.name}
-                  {s.hasPin && <span className="text-[#6B7688]">· PIN</span>}
+                <li key={s.id} className="py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate text-[#C3CBD9]">{s.name}</span>
+                    {editPinId === s.id ? null : (
+                      <>
+                        {s.pin ? (
+                          <code className="rounded border border-[#FFCC00]/25 bg-[#FFCC00]/10 px-1.5 py-0.5 font-mono text-[11px] tracking-widest text-[#FFCC00]">
+                            {s.pin}
+                          </code>
+                        ) : (
+                          <span className="text-[11px] text-[#5A6577]">
+                            {s.legacyPin ? "PIN set (hidden)" : "no PIN"}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => {
+                            setEditPinId(s.id);
+                            setEditPinVal(s.pin ?? "");
+                          }}
+                          className="shrink-0 rounded-md border border-white/10 px-2 py-0.5 text-[11px] text-[#9AA6B8] hover:text-white"
+                        >
+                          {s.pin || s.legacyPin ? "Change" : "Set PIN"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  {editPinId === s.id && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        id={`pin-${s.id}`}
+                        value={editPinVal}
+                        onChange={(e) => setEditPinVal(e.target.value)}
+                        placeholder="1234"
+                        autoFocus
+                        className="h-8 w-24 rounded-md border border-white/10 bg-white/5 px-2 font-mono text-xs tracking-widest text-white outline-none focus:border-[#FFCC00]/50"
+                      />
+                      <button
+                        onClick={() => {
+                          patch({ setStorePin: { storeId: s.id, pin: editPinVal } });
+                          setEditPinId(null);
+                        }}
+                        disabled={busy}
+                        className="h-8 rounded-md bg-[#FFCC00] px-2.5 text-[11px] font-bold text-[#0A1420] hover:bg-[#FFD633] disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditPinId(null)}
+                        className="h-8 rounded-md border border-white/10 px-2 text-[11px] text-[#9AA6B8] hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                      <span className="text-[10px] text-[#5A6577]">blank = no PIN</span>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

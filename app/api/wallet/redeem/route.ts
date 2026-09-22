@@ -5,6 +5,7 @@ import { passes, walletStores } from "@/lib/db/schema";
 import { redeemSchema } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
 import { verifyPassword } from "@/lib/auth/password";
+import { timingSafeEqualStr } from "@/lib/wallet/ids";
 import { logEvent } from "@/lib/wallet/events";
 import { detectDevice } from "@/lib/wallet/ids";
 
@@ -55,7 +56,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "bad_store" }, { status: 422 });
     }
     // Staff PIN, if the store has one — stops a student self-redeeming at the register page.
-    if (store.pinHash) {
+    // `pin` is the readable operational code; `pinHash` is the legacy argon2 column.
+    if (store.pin) {
+      if (!pin || !timingSafeEqualStr(pin, store.pin)) {
+        return NextResponse.json({ ok: false, error: "bad_pin" }, { status: 403 });
+      }
+    } else if (store.pinHash) {
       if (!pin || !(await verifyPassword(store.pinHash, pin))) {
         return NextResponse.json({ ok: false, error: "bad_pin" }, { status: 403 });
       }

@@ -192,7 +192,12 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
         active={campaign.active}
         cards={cardRows}
         links={links.map((l) => ({ action: l.action, destination: l.destination }))}
-        stores={storeRows.map((s) => ({ id: s.id, name: s.name, hasPin: Boolean(s.pinHash) }))}
+        stores={storeRows.map((s) => ({
+          id: s.id,
+          name: s.name,
+          pin: s.pin,
+          legacyPin: Boolean(s.pinHash && !s.pin),
+        }))}
       />
 
       {/* raw feed */}

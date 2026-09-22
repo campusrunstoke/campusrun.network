@@ -27,6 +27,14 @@ export const authTokenDerivable = (): boolean => Boolean(process.env.WALLET_TOKE
 export const hashToken = (token: string): string =>
   createHash("sha256").update(token).digest("hex");
 
+/** Constant-time compare of two short strings (store PINs). Length-safe. */
+export function timingSafeEqualStr(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
 /** Constant-time compare of a presented token against a stored hash (Apple auth). */
 export function tokenMatchesHash(token: string, storedHash: string): boolean {
   const a = Buffer.from(hashToken(token), "hex");
