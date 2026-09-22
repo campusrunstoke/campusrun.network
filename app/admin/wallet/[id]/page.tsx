@@ -18,6 +18,7 @@ import {
   tapsByHour,
   recentEvents,
 } from "@/lib/wallet/stats";
+import QRCode from "qrcode";
 import { cardUrl } from "@/lib/wallet/cards";
 import AdminShell from "../../AdminShell";
 import TapsChart from "./TapsChart";
@@ -55,6 +56,32 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       db.select().from(walletStores).where(eq(walletStores.campaignId, id)).orderBy(desc(walletStores.createdAt)),
     ]);
   const conv = conversions(funnel);
+
+  // QR for the cards shown in the console — this is what gets printed on the back of a
+  // card (§1 "or scans the QR on the back") and it's how you demo a tap without a card
+  // in hand. Capped: rendering hundreds of data URLs would bloat the page for no gain.
+  const QR_LIMIT = 12;
+  const qrByCard = new Map(
+    await Promise.all(
+      cards.slice(0, QR_LIMIT).map(
+        async (c) =>
+          [
+            c.id,
+            await QRCode.toDataURL(cardUrl(c.id), {
+              margin: 1,
+              width: 480,
+              color: { dark: "#003B5C", light: "#FFFFFF" },
+            }),
+          ] as const,
+      ),
+    ),
+  );
+  const cardRows = cards.map((c) => ({
+    id: c.id,
+    url: cardUrl(c.id),
+    active: c.active,
+    qr: qrByCard.get(c.id) ?? null,
+  }));
   const totalTaps = devices.reduce((s, d) => s + d.count, 0);
 
   return (
@@ -153,7 +180,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       <CampaignTools
         campaignId={id}
         active={campaign.active}
-        cards={cards.map((c) => ({ id: c.id, url: cardUrl(c.id), active: c.active }))}
+        cards={cardRows}
         links={links.map((l) => ({ action: l.action, destination: l.destination }))}
         stores={storeRows.map((s) => ({ id: s.id, name: s.name, hasPin: Boolean(s.pinHash) }))}
       />

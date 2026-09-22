@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Card = { id: string; url: string; active: boolean };
+type Card = { id: string; url: string; active: boolean; qr: string | null };
 type LinkRow = { action: string; destination: string };
 type Store = { id: string; name: string; hasPin: boolean };
 
@@ -24,6 +24,7 @@ export default function CampaignTools({
   const [busy, setBusy] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [qrCard, setQrCard] = useState<Card | null>(null);
   const [mintPrefix, setMintPrefix] = useState(cards[0]?.id.split("-")[0] ?? "");
   const [mintCount, setMintCount] = useState("50");
   const [storeName, setStoreName] = useState("");
@@ -65,7 +66,8 @@ export default function CampaignTools({
           </button>
         </div>
         <p className="mb-3 text-xs text-[#6B7688]">
-          Each URL is what KC encodes on the NFC chip / prints as the QR on that card.
+          Each URL is what KC encodes on the NFC chip. Hit QR to see the code that prints on
+          the back of that card — scanning it does exactly what tapping the chip does.
         </p>
         {cards.length === 0 ? (
           <p className="text-sm text-[#6B7688]">No cards minted yet.</p>
@@ -81,6 +83,19 @@ export default function CampaignTools({
                 >
                   {copied === c.id ? "✓" : "Copy"}
                 </button>
+                {c.qr && (
+                  <button
+                    onClick={() => setQrCard(qrCard?.id === c.id ? null : c)}
+                    title="Show the QR that prints on the back of this card"
+                    className={`shrink-0 rounded-md border px-2 py-1 text-[11px] transition-colors ${
+                      qrCard?.id === c.id
+                        ? "border-[#FFCC00]/40 bg-[#FFCC00]/10 text-[#FFCC00]"
+                        : "border-white/10 text-[#9AA6B8] hover:text-white"
+                    }`}
+                  >
+                    QR
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -90,6 +105,34 @@ export default function CampaignTools({
             {showAll ? "Show fewer" : `Show all ${cards.length}`}
           </button>
         )}
+        {qrCard && (
+          <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrCard.qr!}
+              alt={`QR code for card ${qrCard.id}`}
+              className="h-40 w-40 shrink-0 rounded-lg bg-white p-1.5"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="font-mono text-sm text-white">{qrCard.id}</div>
+              <p className="mt-1.5 text-xs leading-relaxed text-[#9AA6B8]">
+                This is the QR that prints on the back of the card. Point a phone camera at it
+                to open the same link the NFC chip fires — it&apos;s the fastest way to test a
+                tap without a card in hand.
+              </p>
+              <code className="mt-2 block truncate font-mono text-[11px] text-[#7DE3FF]">
+                {qrCard.url}
+              </code>
+              <button
+                onClick={() => setQrCard(null)}
+                className="mt-3 rounded-md border border-white/10 px-2.5 py-1 text-[11px] text-[#9AA6B8] hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-white/[0.06] pt-4">
           <Field label="Prefix" value={mintPrefix} onChange={setMintPrefix} mono />
           <Field label="Count" value={mintCount} onChange={setMintCount} mono narrow />
