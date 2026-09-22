@@ -32,16 +32,11 @@ export default async function ReceiptPage({ params }: { params: Promise<{ serial
       <div className="font-display text-xs font-bold uppercase tracking-[0.22em] text-ink">
         Campus Run
       </div>
-      <div className="mt-8">
-        <div className="text-sm font-semibold uppercase tracking-wider text-muted">
-          {campaign.brand}
-        </div>
-        <h1 className="mt-2 font-display text-3xl font-bold leading-tight text-ink">
-          Bought it? Tell us where.
-        </h1>
-        <p className="mt-3 text-base leading-relaxed text-muted">Takes ten seconds.</p>
-      </div>
-      <ReceiptForm serial={serial} alreadyRedeemed={Boolean(pass.redeemedAt)} />
+      <ReceiptForm
+        serial={serial}
+        brand={campaign.brand}
+        alreadyRedeemed={Boolean(pass.redeemedAt)}
+      />
     </main>
   );
 }

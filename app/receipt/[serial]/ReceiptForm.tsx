@@ -4,9 +4,11 @@ import { useState } from "react";
 
 export default function ReceiptForm({
   serial,
+  brand,
   alreadyRedeemed,
 }: {
   serial: string;
+  brand: string;
   alreadyRedeemed: boolean;
 }) {
   const [storeName, setStoreName] = useState("");
@@ -39,6 +41,8 @@ export default function ReceiptForm({
   }
 
   if (status === "done") {
+    // Two different endings: this coupon was already counted (often at the register),
+    // or they just told us now. Showing "Thanks" for the first one reads as a bug.
     return (
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gold">
@@ -52,14 +56,27 @@ export default function ReceiptForm({
             />
           </svg>
         </div>
-        <h2 className="font-display text-3xl font-bold text-ink">Thanks.</h2>
-        <p className="mt-3 text-base text-muted">Stay stoked.</p>
+        <h2 className="font-display text-3xl font-bold text-ink">
+          {alreadyRedeemed ? "Already counted." : "Thanks."}
+        </h2>
+        <p className="mt-3 max-w-xs text-base text-muted">
+          {alreadyRedeemed
+            ? "This coupon was already used, so there's nothing to add."
+            : "Stay stoked."}
+        </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="mt-10 flex flex-1 flex-col">
+    <form onSubmit={submit} className="flex flex-1 flex-col">
+      <div className="mb-10 mt-8">
+        <div className="text-sm font-semibold uppercase tracking-wider text-muted">{brand}</div>
+        <h1 className="mt-2 font-display text-3xl font-bold leading-tight text-ink">
+          Bought it? Tell us where.
+        </h1>
+        <p className="mt-3 text-base leading-relaxed text-muted">Takes ten seconds.</p>
+      </div>
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium text-ink">Store</span>
         <input
