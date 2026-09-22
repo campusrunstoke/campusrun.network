@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import QRCode from "qrcode";
+import { siteUrl } from "@/lib/campaigns";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { passes, walletCampaigns, walletLinks } from "@/lib/db/schema";
@@ -39,6 +41,14 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
     .from(walletLinks)
     .where(eq(walletLinks.campaignId, campaign.id));
 
+  // The barcode IS the cashier's redeem link (§5A). The student carries it on their
+  // screen; staff scan it with their own phone camera and land on the right coupon.
+  const redeemQr = await QRCode.toDataURL(`${siteUrl()}/redeem/${serial}`, {
+    margin: 1,
+    width: 640,
+    color: { dark: "#003B5C", light: "#FFFFFF" },
+  });
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
       <div className="font-display text-xs font-bold uppercase tracking-[0.22em] text-ink">
@@ -61,7 +71,16 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
       <div className="mt-8 rounded-3xl border-2 border-gold bg-fill p-6 text-center">
         <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Coupon</div>
         <div className="mt-3 font-display text-2xl font-bold text-ink">{campaign.name}</div>
-        <div className="mt-4 inline-block rounded-xl bg-white px-5 py-3 font-mono text-lg font-bold tracking-widest text-ink">
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={redeemQr}
+          alt="Show this to the cashier"
+          className="mx-auto mt-5 h-52 w-52 rounded-2xl bg-white p-2"
+        />
+        <p className="mt-3 text-sm font-medium text-ink">Show this to the cashier</p>
+
+        <div className="mt-3 inline-block rounded-xl bg-white px-5 py-2.5 font-mono text-base font-bold tracking-widest text-ink">
           {serial.slice(0, 8).toUpperCase()}
         </div>
       </div>
