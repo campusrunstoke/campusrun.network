@@ -359,7 +359,7 @@ export function SiteFooter({ tagline }: { tagline?: string }) {
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-[13px] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <div>© 2026 Campus Run · campusrun.network</div>
+          <div>© 2026 Campus Run · campusrun.network · Operated by Kmrfuel LLC</div>
           {tagline && <div className="font-semibold text-gold">{tagline}</div>}
         </div>
       </div>
