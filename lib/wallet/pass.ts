@@ -31,8 +31,19 @@ export async function buildPass(
   const passTypeIdentifier = campaign.passTypeIdentifier || walletConfig.passTypeIdentifier!;
   const base = siteUrl();
 
+  // Per-campaign artwork falls back to the Campus Run placeholders, so a campaign with
+  // no design set still produces a valid, installable pass.
+  const png = (b64: string | null) => (b64 ? Buffer.from(b64, "base64") : null);
+  const logo = png(campaign.logoPng);
+  const icon = png(campaign.iconPng);
+  const strip = png(campaign.stripPng);
+  const art: Record<string, Buffer> = { ...passAssets };
+  if (icon) { art["icon.png"] = icon; art["icon@2x.png"] = icon; }
+  if (logo) { art["logo.png"] = logo; art["logo@2x.png"] = logo; }
+  if (strip) { art["strip.png"] = strip; art["strip@2x.png"] = strip; }
+
   const pk = new PKPass(
-    { ...passAssets },
+    art,
     {
       wwdr: walletConfig.wwdr!,
       signerCert: walletConfig.signerCert!,
@@ -49,16 +60,24 @@ export async function buildPass(
       authenticationToken: authToken,
       // Base for the Apple PassKit web service. Apple appends /v1/… to this.
       webServiceURL: `${base}/api/wallet`,
-      foregroundColor: "rgb(0, 59, 92)",
-      backgroundColor: "rgb(255, 255, 255)",
-      labelColor: "rgb(110, 110, 115)",
+      foregroundColor: campaign.fgColor || "rgb(0, 59, 92)",
+      backgroundColor: campaign.bgColor || "rgb(255, 255, 255)",
+      labelColor: campaign.labelColor || "rgb(110, 110, 115)",
     },
   );
 
   pk.type = "coupon";
   pk.headerFields.push({ key: "brand", label: "", value: campaign.brand });
-  pk.primaryFields.push({ key: "offer", label: "COUPON", value: "Your reward" });
-  pk.secondaryFields.push({ key: "where", label: "WHERE TO BUY", value: "Tap for the map" });
+  pk.primaryFields.push({
+    key: "offer",
+    label: campaign.offerLabel || "COUPON",
+    value: campaign.offerValue || "Your reward",
+  });
+  pk.secondaryFields.push({
+    key: "where",
+    label: campaign.secondaryLabel || "WHERE TO BUY",
+    value: campaign.secondaryValue || "Tap for the map",
+  });
   // Back of the pass: every link is a pass-through URL on our domain (§4), so Wallet
   // makes it tappable and we count the click before bouncing to the real destination.
   for (const l of links) {
@@ -68,6 +87,9 @@ export async function buildPass(
       value: `${base}/r/${pass.serial}/${l.action}`,
       attributedValue: `<a href="${base}/r/${pass.serial}/${l.action}">${l.label || LINK_LABELS[l.action]}</a>`,
     });
+  }
+  if (campaign.terms) {
+    pk.backFields.push({ key: "terms", label: "TERMS", value: campaign.terms });
   }
   pk.backFields.push(
     {

@@ -254,8 +254,26 @@ export const walletCampaigns = pgTable(
     venue: text("venue"), // e.g. "LMU — Fallapalooza"
     active: boolean("active").notNull().default(true),
     gateMode: gateModeEnum("gate_mode").notNull().default("none"),
-    // Per-campaign override of the global Pass Type ID (null → use the env default). KC provides later.
+    // Per-campaign override of the global Pass Type ID (null → use the env default).
     passTypeIdentifier: text("pass_type_identifier"),
+
+    // --- Pass design, per campaign (§ "every table scoped by campaign and brand") ---
+    // Each brand's coupon should look like that brand, so every visible slot on the pass
+    // is configurable here. All nullable: null falls back to the Campus Run defaults, so
+    // a campaign created without design still produces a valid pass.
+    offerLabel: text("offer_label"), // small caps above the big text, e.g. "COUPON"
+    offerValue: text("offer_value"), // the big text, e.g. "$1 OFF"
+    secondaryLabel: text("secondary_label"), // e.g. "WHERE TO BUY"
+    secondaryValue: text("secondary_value"), // e.g. "Tap for the map"
+    terms: text("terms"), // fine print on the back of the pass
+    fgColor: text("fg_color"), // "rgb(0, 59, 92)" — text colour
+    bgColor: text("bg_color"), // pass background
+    labelColor: text("label_color"), // the small caps labels
+    // Artwork, stored base64 so a campaign is self-contained and needs no blob storage
+    // at this scale (logos are tens of KB).
+    logoPng: text("logo_png"), // top-left on the pass
+    iconPng: text("icon_png"), // notifications + pass list
+    stripPng: text("strip_png"), // wide banner behind the coupon
     createdBy: uuid("created_by").references(() => admins.id, { onDelete: "set null" }),
   },
   (t) => [index("wallet_campaigns_brand_idx").on(t.brand)],
