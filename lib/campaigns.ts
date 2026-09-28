@@ -1,8 +1,15 @@
 import type { Campaign } from "@/lib/db/schema";
 
-/** Base URL used in generated NFC links (the pretty domain, even when viewed via vercel.app). */
+/**
+ * Base URL baked into generated NFC links, Wallet pass callbacks and QR codes.
+ *
+ * The default is the CANONICAL host (www). The bare domain 308-redirects to it, and
+ * these URLs get burned onto physical cards and into Apple's webServiceURL — where a
+ * redirect is at best a wasted round-trip on festival LTE and at worst a silently
+ * dropped device callback. Never let this fall back to a redirecting host.
+ */
 export function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://campusrun.network").replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.campusrun.network").replace(/\/+$/, "");
 }
 
 /**
