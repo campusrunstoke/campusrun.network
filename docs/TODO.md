@@ -3,7 +3,7 @@
 Working list, ordered by what blocks what. Tick things off as they land.
 Companion doc: [FEATURES.md](FEATURES.md).
 
-_Last updated: 2026-09-29 · Fallapalooza is **Oct 4** (6 days)_
+_Last updated: 2026-09-30 · Fallapalooza is **Oct 4** (6 days)_
 
 ---
 
@@ -55,6 +55,28 @@ hand Pocari a list of entrants we need to collect and store real data:
 - [ ] Handle an entry whose code was edited out — still record it, just without
       card attribution
 - [ ] **CSV export for Pocari** — name, phone, email, time entered, card
+
+### Abuse and cost controls — build these with the entries table
+
+- [ ] **One entry per phone number.** Entries are keyed to the phone number Twilio
+      gives us, not to the card. So one person tapping ten cards still gets one entry,
+      and ten people tapping one shared card each get their own. That's the real defence
+      against someone reusing another person's card or a photographed QR
+- [ ] **Reply only once per number.** Repeat texts get no auto-reply, which halves the cost
+      of any spam and prevents reply loops
+- [ ] **Twilio usage trigger + spend limit** so a flood alerts us and can't run up a bill.
+      Realistic exposure is small (~1¢ per inbound text), but it should be capped, not trusted
+- [ ] **Flag cards with abnormal tap counts** — a card whose link was posted online will
+      show far more taps than a card handed to one person
+- [ ] Multiple phones = multiple entries. Unavoidable for any text-to-enter giveaway;
+      handled by the official rules ("one entry per person") and a check on the winner
+
+### Twilio registration — schedule risk
+
+- [ ] **US carriers require A2P 10DLC registration before a business can SEND texts**
+      from a normal local number. Receiving entries doesn't need it; the auto-reply does.
+      Registration can take days to weeks. If it won't clear before the event, either skip
+      the auto-reply or use a toll-free number (which also needs verification — check timing)
 
 ### Legal — needs Pocari's answer, not ours
 

@@ -3,7 +3,7 @@
 A plain-English inventory of everything built and live. Update this when we ship
 something new. Companion doc: [TODO.md](TODO.md).
 
-_Last updated: 2026-09-29 · everything below is live on www.campusrun.network_
+_Last updated: 2026-09-30 · everything below is live on www.campusrun.network_
 
 ---
 
@@ -88,6 +88,13 @@ That's how Apple's own museum example gets its serif "MUSEUM" — it's the logo 
 
 Controls we do have: text alignment, which field slots are used, hiding the header text
 when the logo already carries the brand, colours, and removing iOS 27's header shadow.
+
+### Classic layout rule
+
+On the classic (pre-iOS-27) coupon, Apple draws the big offer text **on top of** the
+banner, starting from the left. We can't change its size, so the banner keeps the left
+~75% clear and the product sits small in the far-right corner. Classic designs are always
+left-aligned — centred text runs straight into the product.
 
 ### Redemption — two ways, switchable per campaign
 
