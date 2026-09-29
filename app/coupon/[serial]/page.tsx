@@ -16,6 +16,7 @@ const ACTION_META: Record<LinkAction, { label: string; icon: string }> = {
   website: { label: "Visit the site", icon: "🌐" },
   video: { label: "Watch", icon: "▶︎" },
   shop: { label: "Shop now", icon: "🛍" },
+  giveaway: { label: "Enter Giveaway", icon: "★" },
 };
 
 /**
@@ -60,10 +61,10 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
           {campaign.brand}
         </div>
         <h1 className="mt-2 font-display text-4xl font-bold leading-tight text-ink">
-          Your coupon is ready.
+          {campaign.showBarcode ? "Your coupon is ready." : "You\u2019re in."}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-muted">
-          Show this at the register, or tap a link below.
+          {campaign.showBarcode ? "Show this at the register, or tap a link below." : "Tap below to enter."}
         </p>
       </div>
 
@@ -72,22 +73,37 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
         <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Coupon</div>
         <div className="mt-3 font-display text-2xl font-bold text-ink">{campaign.name}</div>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={redeemQr}
-          alt="Show this to the cashier"
-          className="mx-auto mt-5 h-52 w-52 rounded-2xl bg-white p-2"
-        />
-        <p className="mt-3 text-sm font-medium text-ink">Show this to the cashier</p>
+        {/* Giveaway campaigns have nothing for a cashier to scan — hide the code entirely
+            rather than showing a QR that does nothing. */}
+        {campaign.showBarcode && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={redeemQr}
+              alt="Show this to the cashier"
+              className="mx-auto mt-5 h-52 w-52 rounded-2xl bg-white p-2"
+            />
+            <p className="mt-3 text-sm font-medium text-ink">Show this to the cashier</p>
+          </>
+        )}
 
         <div className="mt-3 inline-block rounded-xl bg-white px-5 py-2.5 font-mono text-base font-bold tracking-widest text-ink">
           {serial.slice(0, 8).toUpperCase()}
         </div>
       </div>
 
-      {links.length > 0 && (
-        <div className="mt-8 flex flex-col gap-3">
-          {links.map((l) => {
+      {links.some((l) => l.action === "giveaway") && (
+        <a
+          href={`/r/${serial}/giveaway`}
+          className="mt-8 flex h-16 w-full items-center justify-center rounded-2xl bg-gold font-display text-lg font-bold text-ink-deep transition-transform active:scale-[0.98]"
+        >
+          {links.find((l) => l.action === "giveaway")?.label || "Enter Giveaway"}
+        </a>
+      )}
+
+      {links.filter((l) => l.action !== "giveaway").length > 0 && (
+        <div className="mt-6 flex flex-col gap-3">
+          {links.filter((l) => l.action !== "giveaway").map((l) => {
             const meta = ACTION_META[l.action as LinkAction];
             return (
               <a

@@ -64,6 +64,13 @@
       "when": 1790632989428,
       "tag": "0008_ordinary_callisto",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790646230741,
+      "tag": "0009_careless_sasquatch",
+      "breakpoints": true
     }
   ]
 }

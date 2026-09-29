@@ -230,7 +230,7 @@ export const walletEventTypeEnum = pgEnum("wallet_event_type", [
 export const deviceTypeEnum = pgEnum("device_type", ["ios", "android", "other"]);
 
 /** Which link on the pass was tapped (§4 click.action_type). */
-export const linkActionEnum = pgEnum("link_action", ["map", "website", "video", "shop"]);
+export const linkActionEnum = pgEnum("link_action", ["map", "website", "video", "shop", "giveaway"]);
 
 /** How a redemption was captured (§5). staff_scan = option A, receipt = option B, etc. */
 export const redemptionMethodEnum = pgEnum("redemption_method", [
@@ -261,6 +261,16 @@ export const walletCampaigns = pgTable(
     // Each brand's coupon should look like that brand, so every visible slot on the pass
     // is configurable here. All nullable: null falls back to the Campus Run defaults, so
     // a campaign created without design still produces a valid pass.
+    // Visual style. "coupon" = classic layout (banner strip, works on every iOS).
+    // "poster" = iOS 18+ full-bleed background event ticket. Switchable per campaign.
+    passStyle: text("pass_style").notNull().default("coupon"),
+    // Giveaway campaigns hide the barcode; flip back on to restore the scan-to-redeem flow.
+    showBarcode: boolean("show_barcode").notNull().default(true),
+    // Kill switch for the giveaway link — hides it from new passes instantly, no redeploy.
+    giveawayEnabled: boolean("giveaway_enabled").notNull().default(false),
+    headerText: text("header_text"), // top-right on the pass; falls back to `brand`
+    backgroundPng: text("background_png"), // full-bleed artwork for the poster style
+
     offerLabel: text("offer_label"), // small caps above the big text, e.g. "COUPON"
     offerValue: text("offer_value"), // the big text, e.g. "$1 OFF"
     secondaryLabel: text("secondary_label"), // e.g. "WHERE TO BUY"

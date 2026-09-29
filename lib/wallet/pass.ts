@@ -18,6 +18,7 @@ const LINK_LABELS: Record<LinkAction, string> = {
   website: "WEBSITE",
   video: "WATCH",
   shop: "SHOP",
+  giveaway: "GIVEAWAY",
 };
 
 export async function buildPass(
@@ -37,10 +38,12 @@ export async function buildPass(
   const logo = png(campaign.logoPng);
   const icon = png(campaign.iconPng);
   const strip = png(campaign.stripPng);
+  const background = png(campaign.backgroundPng);
   const art: Record<string, Buffer> = { ...passAssets };
   if (icon) { art["icon.png"] = icon; art["icon@2x.png"] = icon; }
   if (logo) { art["logo.png"] = logo; art["logo@2x.png"] = logo; }
   if (strip) { art["strip.png"] = strip; art["strip@2x.png"] = strip; }
+  if (background) { art["background.png"] = background; art["background@2x.png"] = background; }
 
   const pk = new PKPass(
     art,
@@ -66,8 +69,17 @@ export async function buildPass(
     },
   );
 
-  pk.type = "coupon";
-  pk.headerFields.push({ key: "brand", label: "", value: campaign.brand });
+  // "poster" is Apple's iOS 18+ full-bleed event ticket; anything else stays the classic
+  // coupon. Both are driven off the same campaign data, so switching is one field.
+  const isPoster = campaign.passStyle === "poster";
+  if (isPoster) {
+    pk.type = "eventTicket";
+    pk.preferredStyleSchemes = ["posterEventTicket"];
+  } else {
+    pk.type = "coupon";
+  }
+
+  pk.headerFields.push({ key: "brand", label: "", value: campaign.headerText || campaign.brand });
   pk.primaryFields.push({
     key: "offer",
     label: campaign.offerLabel || "COUPON",
@@ -102,14 +114,16 @@ export async function buildPass(
   );
 
   // The barcode is the redeem URL for this exact pass: a cashier scans it with any phone
-  // camera and lands on /redeem/{serial} (§5 option A) — no app, no typing, and the
-  // serial ties the redemption back to the tap.
-  pk.setBarcodes({
-    message: `${base}/redeem/${pass.serial}`,
-    format: "PKBarcodeFormatQR",
-    messageEncoding: "iso-8859-1",
-    altText: pass.cardId,
-  });
+  // camera and lands on /redeem/{serial} (§5 option A). Giveaway campaigns switch it off
+  // — flipping showBarcode back on restores the scan-to-redeem flow with no code change.
+  if (campaign.showBarcode) {
+    pk.setBarcodes({
+      message: `${base}/redeem/${pass.serial}`,
+      format: "PKBarcodeFormatQR",
+      messageEncoding: "iso-8859-1",
+      altText: pass.cardId,
+    });
+  }
 
   return pk.getAsBuffer();
 }
