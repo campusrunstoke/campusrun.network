@@ -92,32 +92,6 @@ export async function buildPass(
   // Decide style before constructing: `semantics` is a constructor prop (pk.props is a
   // read-only getter), and Apple requires the full set or the poster layout falls back.
   const isPoster = campaign.passStyle === "poster";
-  const starts = campaign.eventStartsAt ?? new Date();
-  const ends = campaign.eventEndsAt ?? new Date(starts.getTime() + 6 * 3600 * 1000);
-  // Apple documents venueLocation as event-ticket-only, but the "place" Featured Action
-  // may still read it — worth attaching when we have coordinates, since it costs nothing
-  // and the top-level `locations` array demonstrably isn't what that button looks at.
-  const venueSemantics =
-    campaign.placeLat && campaign.placeLon
-      ? {
-          venueName: campaign.placeLabel || campaign.venue || campaign.brand,
-          venueLocation: {
-            latitude: Number(campaign.placeLat),
-            longitude: Number(campaign.placeLon),
-          },
-        }
-      : {};
-
-  const posterSemantics = {
-    eventType: "PKEventTypeGeneric" as const,
-    eventName: campaign.name,
-    venueName: campaign.venue || campaign.brand,
-    venueRegionName: campaign.venueRegion || "Los Angeles",
-    venueRoom: campaign.venueRoom || campaign.venue || campaign.brand,
-    eventStartDate: starts.toISOString(),
-    eventEndDate: ends.toISOString(),
-  };
-
   const pk = new PKPass(
     art,
     {
@@ -139,7 +113,6 @@ export async function buildPass(
       foregroundColor: campaign.fgColor || "rgb(0, 59, 92)",
       backgroundColor: campaign.bgColor || "rgb(255, 255, 255)",
       labelColor: campaign.labelColor || "rgb(110, 110, 115)",
-      ...(isPoster ? { semantics: { ...venueSemantics } } : {}),
     },
   );
 
@@ -182,7 +155,10 @@ export async function buildPass(
     // on the button comes from the type — we choose the type, Apple writes the words.
     const DEFAULT_TYPE: Partial<Record<LinkAction, string>> = {
       giveaway: "viewOffersRewards",
-      map: "place",
+      // Apple's "place" action never renders on posterGeneric — tested six ways, and
+      // its venue coordinates are documented as event-ticket-only. "order" is the
+      // closest type that actually appears, and it stays tracked.
+      map: "order",
       website: "shop",
       shop: "shop",
       video: "watchTrailer",
