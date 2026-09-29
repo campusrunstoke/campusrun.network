@@ -271,6 +271,12 @@ export const walletCampaigns = pgTable(
     headerText: text("header_text"), // top-right on the pass; falls back to `brand`
     // Poster event tickets REQUIRE these semantic tags — Apple silently falls back to the
     // blurred legacy layout if any is missing, which is not an error you can see.
+    // Where the product is sold. Apple's "place" Featured Action and the lock-screen
+    // location prompt both need real coordinates — a map URL alone isn't enough.
+    placeLat: numeric("place_lat", { precision: 9, scale: 6 }),
+    placeLon: numeric("place_lon", { precision: 9, scale: 6 }),
+    placeLabel: text("place_label"),
+
     venueRegion: text("venue_region"), // city / hosting region
     venueRoom: text("venue_room"),
     eventStartsAt: timestamp("event_starts_at", { withTimezone: true }),

@@ -196,6 +196,17 @@ export async function buildPass(
     pk.secondaryFields.push(where);
     pk.backFields.push(...backFields);
   }
+  // Store coordinates drive Apple's "place" Featured Action and the lock-screen
+  // suggestion when someone is near the store. A map URL alone isn't enough — Wallet
+  // silently drops a "place" button on a pass that has no location.
+  if (campaign.placeLat && campaign.placeLon) {
+    pk.setLocations({
+      latitude: Number(campaign.placeLat),
+      longitude: Number(campaign.placeLon),
+      relevantText: campaign.placeLabel || campaign.secondaryValue || campaign.brand,
+    });
+  }
+
   // The barcode is the redeem URL for this exact pass: a cashier scans it with any phone
   // camera and lands on /redeem/{serial} (§5 option A). Giveaway campaigns switch it off
   // — flipping showBarcode back on restores the scan-to-redeem flow with no code change.

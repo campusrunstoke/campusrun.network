@@ -85,6 +85,13 @@
       "when": 1790709551345,
       "tag": "0011_normal_starjammers",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790710471250,
+      "tag": "0012_lively_archangel",
+      "breakpoints": true
     }
   ]
 }
