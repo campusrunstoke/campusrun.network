@@ -43,7 +43,15 @@ export async function buildPass(
   if (icon) { art["icon.png"] = icon; art["icon@2x.png"] = icon; }
   if (logo) { art["logo.png"] = logo; art["logo@2x.png"] = logo; }
   if (strip) { art["strip.png"] = strip; art["strip@2x.png"] = strip; }
-  if (background) { art["background.png"] = background; art["background@2x.png"] = background; }
+  if (background) {
+    // Poster event tickets read artwork.png and render it crisp and full-bleed.
+    // background.png is the legacy eventTicket asset, which iOS blurs and darkens —
+    // supplying both means the poster style looks right and older layouts still work.
+    art["background.png"] = background;
+    art["background@2x.png"] = background;
+    art["artwork.png"] = background;
+    art["artwork@2x.png"] = background;
+  }
 
   const pk = new PKPass(
     art,
