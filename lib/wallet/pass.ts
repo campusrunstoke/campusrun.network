@@ -5,6 +5,12 @@ import { siteUrl } from "@/lib/campaigns";
 import type { Pass, WalletCampaign, WalletLink } from "@/lib/db/schema";
 import type { LinkAction } from "./types";
 
+/** A campaign link, plus the optional Apple Featured Action overrides. */
+export type FeaturedLink = Pick<WalletLink, "action" | "label"> & {
+  featuredType?: string | null;
+  destination?: string | null;
+};
+
 /**
  * Builds a signed .pkpass buffer for one card's pass. Per-pass values (serial,
  * authenticationToken, webServiceURL) are injected here so a tap and a later
@@ -30,7 +36,7 @@ function buildBackFields(
   serial: string,
   base: string,
   terms: string | null,
-  links: Pick<WalletLink, "action" | "label">[],
+  links: FeaturedLink[],
   cardId: string,
 ) {
   const rows = links.map((l) => ({
@@ -54,7 +60,7 @@ export async function buildPass(
   pass: Pick<Pass, "serial" | "cardId">,
   campaign: WalletCampaign,
   authToken: string,
-  links: Pick<WalletLink, "action" | "label">[] = [],
+  links: FeaturedLink[] = [],
 ): Promise<Buffer> {
   if (!walletConfigured) throw new WalletNotConfiguredError();
 
@@ -157,17 +163,31 @@ export async function buildPass(
 
     // Up to two Featured Actions, rendered as cards under the pass. These are our
     // tracked pass-through URLs, so a front-of-pass tap is counted like any other click.
-    const featured: { identifier: string; type: "viewOffersRewards" | "place" | "shop"; url: string }[] = [];
-    const has = (a: LinkAction) => links.some((l) => l.action === a);
-    if (has("giveaway")) {
-      featured.push({ identifier: "giveaway", type: "viewOffersRewards", url: `${base}/r/${pass.serial}/giveaway` });
-    }
-    if (has("map")) {
-      featured.push({ identifier: "map", type: "place", url: `${base}/r/${pass.serial}/map` });
-    }
-    if (featured.length < 2 && has("website")) {
-      featured.push({ identifier: "website", type: "shop", url: `${base}/r/${pass.serial}/website` });
-    }
+    // Apple's default type per link, overridable per link via featuredType. The wording
+    // on the button comes from the type — we choose the type, Apple writes the words.
+    const DEFAULT_TYPE: Partial<Record<LinkAction, string>> = {
+      giveaway: "viewOffersRewards",
+      map: "place",
+      website: "shop",
+      shop: "shop",
+      video: "watchTrailer",
+    };
+    const ORDER: LinkAction[] = ["giveaway", "map", "website", "shop", "video"];
+    const featured = ORDER.flatMap((action) => {
+      const link = links.find((l) => l.action === action);
+      if (!link) return [];
+      const type = link.featuredType || DEFAULT_TYPE[action];
+      if (!type) return [];
+      // A link may point straight at its destination instead of through our tracker —
+      // some Apple action types only render when the URL matches the action.
+      // "place" only renders when the URL is a real map link, so it bypasses our
+      // tracker; every other type goes through /r/ and stays counted.
+      const url =
+        type === "place" && link.destination
+          ? link.destination
+          : `${base}/r/${pass.serial}/${action}`;
+      return [{ identifier: action, type: type as never, url }];
+    });
     pk.featuredActions = featured.slice(0, 2);
   } else {
     pk.type = "coupon";

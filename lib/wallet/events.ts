@@ -25,7 +25,12 @@ export async function logEvent(event: NewWalletEvent): Promise<void> {
 /** The pass-through links configured for a campaign (baked into the pass + coupon page). */
 export async function campaignLinks(campaignId: string) {
   return db
-    .select({ action: walletLinks.action, label: walletLinks.label })
+    .select({
+      action: walletLinks.action,
+      label: walletLinks.label,
+      featuredType: walletLinks.featuredType,
+      destination: walletLinks.destination,
+    })
     .from(walletLinks)
     .where(eq(walletLinks.campaignId, campaignId));
 }

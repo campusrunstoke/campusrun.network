@@ -78,6 +78,13 @@
       "when": 1790647446703,
       "tag": "0010_bright_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790709551345,
+      "tag": "0011_normal_starjammers",
+      "breakpoints": true
     }
   ]
 }

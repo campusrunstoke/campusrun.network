@@ -335,6 +335,11 @@ export const walletLinks = pgTable(
       .references(() => walletCampaigns.id, { onDelete: "cascade" }),
     action: linkActionEnum("action").notNull(),
     label: text("label"),
+    // Which of Apple's preset Featured Action types this link uses on the front of a
+    // pass. Apple writes the button wording from this — we don't control the words —
+    // and some types (e.g. `place`) appear to require a matching URL or Wallet hides
+    // the button entirely. Null = our default mapping.
+    featuredType: text("featured_type"),
     destination: text("destination").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
