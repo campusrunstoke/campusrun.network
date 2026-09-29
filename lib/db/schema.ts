@@ -346,6 +346,10 @@ export const walletLinks = pgTable(
     // and some types (e.g. `place`) appear to require a matching URL or Wallet hides
     // the button entirely. Null = our default mapping.
     featuredType: text("featured_type"),
+    // Normally a Featured Action points at our /r/ tracker so the tap is counted.
+    // Set this only if a given Apple action type refuses to render unless the URL is
+    // the real destination — it trades the click count for the button appearing.
+    featuredDirect: boolean("featured_direct").notNull().default(false),
     destination: text("destination").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

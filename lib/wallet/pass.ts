@@ -8,6 +8,7 @@ import type { LinkAction } from "./types";
 /** A campaign link, plus the optional Apple Featured Action overrides. */
 export type FeaturedLink = Pick<WalletLink, "action" | "label"> & {
   featuredType?: string | null;
+  featuredDirect?: boolean | null;
   destination?: string | null;
 };
 
@@ -180,10 +181,11 @@ export async function buildPass(
       if (!type) return [];
       // A link may point straight at its destination instead of through our tracker —
       // some Apple action types only render when the URL matches the action.
-      // "place" only renders when the URL is a real map link, so it bypasses our
-      // tracker; every other type goes through /r/ and stays counted.
+      // Everything goes through our tracker so the tap is counted. Only a link
+      // explicitly marked direct bypasses it, for action types that won't render
+      // otherwise — that trade is opt-in, never the default.
       const url =
-        type === "place" && link.destination
+        link.featuredDirect && link.destination
           ? link.destination
           : `${base}/r/${pass.serial}/${action}`;
       return [{ identifier: action, type: type as never, url }];

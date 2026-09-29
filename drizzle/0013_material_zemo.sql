@@ -1,0 +1,1 @@
+ALTER TABLE "wallet_links" ADD COLUMN "featured_direct" boolean DEFAULT false NOT NULL;

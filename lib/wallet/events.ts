@@ -29,6 +29,7 @@ export async function campaignLinks(campaignId: string) {
       action: walletLinks.action,
       label: walletLinks.label,
       featuredType: walletLinks.featuredType,
+      featuredDirect: walletLinks.featuredDirect,
       destination: walletLinks.destination,
     })
     .from(walletLinks)
