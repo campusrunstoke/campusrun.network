@@ -94,6 +94,20 @@ export async function buildPass(
   const isPoster = campaign.passStyle === "poster";
   const starts = campaign.eventStartsAt ?? new Date();
   const ends = campaign.eventEndsAt ?? new Date(starts.getTime() + 6 * 3600 * 1000);
+  // Apple documents venueLocation as event-ticket-only, but the "place" Featured Action
+  // may still read it — worth attaching when we have coordinates, since it costs nothing
+  // and the top-level `locations` array demonstrably isn't what that button looks at.
+  const venueSemantics =
+    campaign.placeLat && campaign.placeLon
+      ? {
+          venueName: campaign.placeLabel || campaign.venue || campaign.brand,
+          venueLocation: {
+            latitude: Number(campaign.placeLat),
+            longitude: Number(campaign.placeLon),
+          },
+        }
+      : {};
+
   const posterSemantics = {
     eventType: "PKEventTypeGeneric" as const,
     eventName: campaign.name,
@@ -125,7 +139,7 @@ export async function buildPass(
       foregroundColor: campaign.fgColor || "rgb(0, 59, 92)",
       backgroundColor: campaign.bgColor || "rgb(255, 255, 255)",
       labelColor: campaign.labelColor || "rgb(110, 110, 115)",
-      ...(isPoster ? { semantics: posterSemantics } : {}),
+      ...(isPoster ? { semantics: { ...venueSemantics } } : {}),
     },
   );
 
