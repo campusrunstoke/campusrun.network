@@ -82,7 +82,24 @@ export async function buildPass(
   const isPoster = campaign.passStyle === "poster";
   if (isPoster) {
     pk.type = "eventTicket";
-    pk.preferredStyleSchemes = ["posterEventTicket"];
+    // Order matters: Wallet tries posterEventTicket first and falls back to the legacy
+    // eventTicket if validation fails.
+    pk.preferredStyleSchemes = ["posterEventTicket", "eventTicket"];
+    // Apple REQUIRES all of these semantic tags for the poster layout. Miss one and the
+    // pass silently renders as a legacy event ticket with a blurred background — no
+    // error, no warning, it just looks wrong. Defaults keep every field populated.
+    const starts = campaign.eventStartsAt ?? new Date();
+    const ends = campaign.eventEndsAt ?? new Date(starts.getTime() + 6 * 3600 * 1000);
+    pk.setRelevantDates([{ startDate: starts.toISOString(), endDate: ends.toISOString() }]);
+    pk.props.semantics = {
+      eventType: "PKEventTypeGeneric",
+      eventName: campaign.name,
+      venueName: campaign.venue || campaign.brand,
+      venueRegionName: campaign.venueRegion || "Los Angeles",
+      venueRoom: campaign.venueRoom || campaign.venue || campaign.brand,
+      eventStartDate: starts.toISOString(),
+      eventEndDate: ends.toISOString(),
+    };
   } else {
     pk.type = "coupon";
   }

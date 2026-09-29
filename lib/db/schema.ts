@@ -269,6 +269,12 @@ export const walletCampaigns = pgTable(
     // Kill switch for the giveaway link — hides it from new passes instantly, no redeploy.
     giveawayEnabled: boolean("giveaway_enabled").notNull().default(false),
     headerText: text("header_text"), // top-right on the pass; falls back to `brand`
+    // Poster event tickets REQUIRE these semantic tags — Apple silently falls back to the
+    // blurred legacy layout if any is missing, which is not an error you can see.
+    venueRegion: text("venue_region"), // city / hosting region
+    venueRoom: text("venue_room"),
+    eventStartsAt: timestamp("event_starts_at", { withTimezone: true }),
+    eventEndsAt: timestamp("event_ends_at", { withTimezone: true }),
     backgroundPng: text("background_png"), // full-bleed artwork for the poster style
 
     offerLabel: text("offer_label"), // small caps above the big text, e.g. "COUPON"

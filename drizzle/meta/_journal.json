@@ -71,6 +71,13 @@
       "when": 1790646230741,
       "tag": "0009_careless_sasquatch",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790647446703,
+      "tag": "0010_bright_hobgoblin",
+      "breakpoints": true
     }
   ]
 }
