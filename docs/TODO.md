@@ -9,7 +9,12 @@ _Last updated: 2026-09-29 · Fallapalooza is **Oct 4** (6 days)_
 
 ## 1. Blocked on Kasey
 
-- [ ] **Pick a poster design** (p1–p4) and **a banner design** (b1–b4)
+- [ ] **Pick one iOS 27 design and one classic design** from the three directions:
+      - A · Clean (Futura) — `/c/pocari-poster-a` · `/c/pocari-classic-a`
+      - B · Bold (DIN Condensed) — `/c/pocari-poster-b` · `/c/pocari-classic-b`
+      - C · Editorial (Avenir Next) — `/c/pocari-poster-c` · `/c/pocari-classic-c`
+- [ ] Approve the placeholder headline copy baked into the artwork — "ICE SLURRY",
+      "STAY COOL.", "Fallapalooza / LMU · October 4" were written for the mockups
 - [x] ~~Report what the front buttons say~~ — confirmed: *View Offers and Rewards* +
       *Order Delivery and Pickup*. See FEATURES.md
 - [ ] Confirm the big text should stay **ENTER TO WIN**
@@ -95,7 +100,7 @@ hand Pocari a list of entrants we need to collect and store real data:
 
 ## 6. Housekeeping
 
-- [ ] Delete the mockup campaigns once a design is chosen
+- [ ] Delete the mockup campaigns once a design is chosen (batch label `mockup-v3`)
 - [ ] Agree a "tell me before you push" rule with Kasey — we collided on a database
       migration once already
 - [ ] Rotate the signing certificate if anyone leaves the project

@@ -79,6 +79,16 @@ Don't re-test this.
 
 The classic/banner style shows **no** front buttons at all — links live on the back (ⓘ).
 
+### Typography
+
+**Apple allows no custom fonts in pass text** — every field renders in Apple's own face
+(on iOS 27 posters, the typewriter-style one). Brand typography therefore lives in the
+images: the **logo** carries the wordmark and the **artwork** carries any headline.
+That's how Apple's own museum example gets its serif "MUSEUM" — it's the logo image.
+
+Controls we do have: text alignment, which field slots are used, hiding the header text
+when the logo already carries the brand, colours, and removing iOS 27's header shadow.
+
 ### Redemption — two ways, switchable per campaign
 
 - **Cashier scan** — the pass barcode is the redeem link. Staff scan it with their own
