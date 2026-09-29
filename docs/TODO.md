@@ -14,7 +14,7 @@ _Last updated: 2026-09-29 · Fallapalooza is **Oct 4** (6 days)_
       - B · Bold (DIN Condensed) — `/c/pocari-poster-b` · `/c/pocari-classic-b`
       - C · Editorial (Avenir Next) — `/c/pocari-poster-c` · `/c/pocari-classic-c`
 - [ ] Approve the placeholder headline copy baked into the artwork — "ICE SLURRY",
-      "STAY COOL.", "Fallapalooza / LMU · October 4" were written for the mockups
+      "STAY COOL.", "Fallapalooza / LMU" were written for the mockups
 - [x] ~~Report what the front buttons say~~ — confirmed: *View Offers and Rewards* +
       *Order Delivery and Pickup*. See FEATURES.md
 - [ ] Confirm the big text should stay **ENTER TO WIN**
