@@ -113,19 +113,29 @@ export async function buildPass(
       foregroundColor: campaign.fgColor || "rgb(0, 59, 92)",
       backgroundColor: campaign.bgColor || "rgb(255, 255, 255)",
       labelColor: campaign.labelColor || "rgb(110, 110, 115)",
+      ...(campaign.suppressHeaderDarkening ? { suppressHeaderDarkening: true } : {}),
     },
   );
+
+  const ALIGN = {
+    left: "PKTextAlignmentLeft",
+    center: "PKTextAlignmentCenter",
+    right: "PKTextAlignmentRight",
+  } as const;
+  const textAlignment = ALIGN[campaign.textAlign as keyof typeof ALIGN] ?? ALIGN.left;
 
   const header = { key: "brand", label: "", value: campaign.headerText || campaign.brand };
   const offer = {
     key: "offer",
     label: campaign.offerLabel || "COUPON",
     value: campaign.offerValue || "Your reward",
+    textAlignment,
   };
   const where = {
     key: "where",
     label: campaign.secondaryLabel || "WHERE TO BUY",
     value: campaign.secondaryValue || "Tap for the map",
+    textAlignment,
   };
   const backFields = buildBackFields(pass.serial, base, campaign.terms, links, pass.cardId);
 
@@ -135,14 +145,17 @@ export async function buildPass(
     // barcode, and — the part that matters here — it supports Featured Actions, the
     // only way Apple gives us tappable buttons on the FRONT of a pass.
     const poster = new PassType("posterGeneric");
-    poster.headerFields.push(header);
-    poster.primaryFields.push(offer, where);
+    if (!campaign.hideHeaderText) poster.headerFields.push(header);
+    // One field per row. Two side by side in primaryFields is what crammed the offer
+    // against the second line; the poster layout has a footer slot built for it.
+    poster.primaryFields.push(offer);
+    poster.footerFields.push(where);
     poster.backFields.push(...backFields);
 
     // Shipping a legacy style alongside it means pre-iOS-27 devices still get a usable
     // pass instead of nothing. Wallet prefers posterGeneric wherever it's supported.
     const legacy = new PassType("coupon");
-    legacy.headerFields.push(header);
+    if (!campaign.hideHeaderText) legacy.headerFields.push(header);
     legacy.primaryFields.push(offer);
     legacy.secondaryFields.push(where);
     legacy.backFields.push(...backFields);
@@ -183,7 +196,7 @@ export async function buildPass(
     pk.featuredActions = featured.slice(0, 2);
   } else {
     pk.type = "coupon";
-    pk.headerFields.push(header);
+    if (!campaign.hideHeaderText) pk.headerFields.push(header);
     pk.primaryFields.push(offer);
     pk.secondaryFields.push(where);
     pk.backFields.push(...backFields);

@@ -269,6 +269,14 @@ export const walletCampaigns = pgTable(
     // Kill switch for the giveaway link — hides it from new passes instantly, no redeploy.
     giveawayEnabled: boolean("giveaway_enabled").notNull().default(false),
     headerText: text("header_text"), // top-right on the pass; falls back to `brand`
+    // Layout controls. Apple allows no custom fonts in pass text, so brand typography
+    // lives in the logo and artwork images; these only steer Apple's own fields.
+    textAlign: text("text_align").notNull().default("left"), // left | center | right
+    // Removes the shadow iOS 27 adds behind a poster's header, for bright artwork.
+    suppressHeaderDarkening: boolean("suppress_header_darkening").notNull().default(false),
+    // When the logo image already carries the brand wordmark, repeating it as header
+    // text is what truncated ("Pocari Sweat x Campus…"). Hide it in that case.
+    hideHeaderText: boolean("hide_header_text").notNull().default(false),
     // Poster event tickets REQUIRE these semantic tags — Apple silently falls back to the
     // blurred legacy layout if any is missing, which is not an error you can see.
     // Where the product is sold. Apple's "place" Featured Action and the lock-screen
