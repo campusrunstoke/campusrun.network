@@ -32,6 +32,36 @@ yet open a text message. To finish it:
 - [ ] Build the Twilio webhook that receives replies and records the entry
 - [ ] Add entries to the dashboard as their own number
 - [ ] Decide what happens to a student who texts the wrong thing
+- [ ] Verify the sms: redirect opens Messages from inside a pass (test card is live:
+      /c/pocari-smstest — no Twilio needed for this)
+
+## 2b. Capturing who actually entered
+
+Today a giveaway tap is anonymous — we know a card was tapped, not who tapped it. To
+hand Pocari a list of entrants we need to collect and store real data:
+
+- [ ] **Put a code in the pre-filled text** so entries tie back to a card:
+      `sms:+1XXXXXXXXXX&body=POCARI 7F28BB4A`. Without this we get a pile of phone
+      numbers with no idea which card or campaign they came from — the tap and the
+      entry stay two disconnected datasets
+- [ ] Build a **giveaway entries** table: phone, first/last name, email, time, plus
+      the card and campaign it traces back to
+- [ ] Decide how we get **names** — auto-reply asking them to text it back, or an
+      auto-reply linking to a short form. The form is better if Pocari wants email
+      for follow-up, and gives us somewhere to put the consent line
+- [ ] Handle an entry whose code was edited out — still record it, just without
+      card attribution
+- [ ] **CSV export for Pocari** — name, phone, email, time entered, card
+
+### Legal — needs Pocari's answer, not ours
+
+- [ ] **Consent to share.** Students must be told their details go to Pocari. One
+      line in the auto-reply or on the form, plus a link to the rules
+- [ ] **Sweepstakes rules.** Official rules, who's eligible, how a winner is picked
+      and notified
+- [ ] **Text-message consent (TCPA).** They text us first, which helps, but any
+      marketing follow-up has rules. Pocari's legal team owns this — we just need to
+      ask before hundreds of people have entered
 
 ## 3. Before real cards are printed
 
