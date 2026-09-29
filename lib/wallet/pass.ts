@@ -1,4 +1,4 @@
-import { PKPass } from "passkit-generator";
+import { PKPass, PassType } from "passkit-generator";
 import { walletConfig, walletConfigured, WalletNotConfiguredError } from "./config";
 import { passAssets } from "./assets";
 import { siteUrl } from "@/lib/campaigns";
@@ -20,6 +20,35 @@ const LINK_LABELS: Record<LinkAction, string> = {
   shop: "SHOP",
   giveaway: "GIVEAWAY",
 };
+
+/**
+ * Back-of-pass rows, shared by every style so the poster and its legacy fallback carry
+ * identical content. Each link is a pass-through URL on our domain (§4): Wallet renders
+ * the anchor as tappable, and we count the click before bouncing to the real destination.
+ */
+function buildBackFields(
+  serial: string,
+  base: string,
+  terms: string | null,
+  links: Pick<WalletLink, "action" | "label">[],
+  cardId: string,
+) {
+  const rows = links.map((l) => ({
+    key: `link-${l.action}`,
+    label: LINK_LABELS[l.action],
+    value: `${base}/r/${serial}/${l.action}`,
+    attributedValue: `<a href="${base}/r/${serial}/${l.action}">${l.label || LINK_LABELS[l.action]}</a>`,
+  }));
+  if (terms) rows.push({ key: "terms", label: "TERMS", value: terms, attributedValue: terms });
+  rows.push({
+    key: "receipt",
+    label: "BOUGHT IT?",
+    value: `${base}/receipt/${serial}`,
+    attributedValue: `<a href="${base}/receipt/${serial}">Tell us where you bought it</a>`,
+  });
+  rows.push({ key: "card", label: "CARD", value: cardId, attributedValue: cardId });
+  return rows;
+}
 
 export async function buildPass(
   pass: Pick<Pass, "serial" | "cardId">,
@@ -93,51 +122,60 @@ export async function buildPass(
     },
   );
 
-  // "poster" is Apple's iOS 18+ full-bleed event ticket; anything else stays the classic
-  // coupon. Both are driven off the same campaign data, so switching is one field.
-  if (isPoster) {
-    pk.type = "eventTicket";
-    // Order matters: Wallet tries posterEventTicket first, then falls back.
-    pk.preferredStyleSchemes = ["posterEventTicket", "eventTicket"];
-    pk.setRelevantDates([{ startDate: starts.toISOString(), endDate: ends.toISOString() }]);
-  } else {
-    pk.type = "coupon";
-  }
-
-  pk.headerFields.push({ key: "brand", label: "", value: campaign.headerText || campaign.brand });
-  pk.primaryFields.push({
+  const header = { key: "brand", label: "", value: campaign.headerText || campaign.brand };
+  const offer = {
     key: "offer",
     label: campaign.offerLabel || "COUPON",
     value: campaign.offerValue || "Your reward",
-  });
-  pk.secondaryFields.push({
+  };
+  const where = {
     key: "where",
     label: campaign.secondaryLabel || "WHERE TO BUY",
     value: campaign.secondaryValue || "Tap for the map",
-  });
-  // Back of the pass: every link is a pass-through URL on our domain (§4), so Wallet
-  // makes it tappable and we count the click before bouncing to the real destination.
-  for (const l of links) {
-    pk.backFields.push({
-      key: `link-${l.action}`,
-      label: LINK_LABELS[l.action],
-      value: `${base}/r/${pass.serial}/${l.action}`,
-      attributedValue: `<a href="${base}/r/${pass.serial}/${l.action}">${l.label || LINK_LABELS[l.action]}</a>`,
-    });
-  }
-  if (campaign.terms) {
-    pk.backFields.push({ key: "terms", label: "TERMS", value: campaign.terms });
-  }
-  pk.backFields.push(
-    {
-      key: "receipt",
-      label: "BOUGHT IT?",
-      value: `${base}/receipt/${pass.serial}`,
-      attributedValue: `<a href="${base}/receipt/${pass.serial}">Tell us where you bought it</a>`,
-    },
-    { key: "card", label: "CARD", value: pass.cardId },
-  );
+  };
+  const backFields = buildBackFields(pass.serial, base, campaign.terms, links, pass.cardId);
 
+  if (isPoster) {
+    // posterGeneric (iOS 27) is the full-bleed poster layout built for coupons and
+    // memberships: crisp artwork, no event semantics to satisfy, it still allows a
+    // barcode, and — the part that matters here — it supports Featured Actions, the
+    // only way Apple gives us tappable buttons on the FRONT of a pass.
+    const poster = new PassType("posterGeneric");
+    poster.headerFields.push(header);
+    poster.primaryFields.push(offer, where);
+    poster.backFields.push(...backFields);
+
+    // Shipping a legacy style alongside it means pre-iOS-27 devices still get a usable
+    // pass instead of nothing. Wallet prefers posterGeneric wherever it's supported.
+    const legacy = new PassType("coupon");
+    legacy.headerFields.push(header);
+    legacy.primaryFields.push(offer);
+    legacy.secondaryFields.push(where);
+    legacy.backFields.push(...backFields);
+
+    pk.types.push(poster, legacy);
+
+    // Up to two Featured Actions, rendered as cards under the pass. These are our
+    // tracked pass-through URLs, so a front-of-pass tap is counted like any other click.
+    const featured: { identifier: string; type: "viewOffersRewards" | "place" | "shop"; url: string }[] = [];
+    const has = (a: LinkAction) => links.some((l) => l.action === a);
+    if (has("giveaway")) {
+      featured.push({ identifier: "giveaway", type: "viewOffersRewards", url: `${base}/r/${pass.serial}/giveaway` });
+    }
+    if (has("map")) {
+      featured.push({ identifier: "map", type: "place", url: `${base}/r/${pass.serial}/map` });
+    }
+    if (featured.length < 2 && has("website")) {
+      featured.push({ identifier: "website", type: "shop", url: `${base}/r/${pass.serial}/website` });
+    }
+    pk.featuredActions = featured.slice(0, 2);
+  } else {
+    pk.type = "coupon";
+    pk.headerFields.push(header);
+    pk.primaryFields.push(offer);
+    pk.secondaryFields.push(where);
+    pk.backFields.push(...backFields);
+  }
   // The barcode is the redeem URL for this exact pass: a cashier scans it with any phone
   // camera and lands on /redeem/{serial} (§5 option A). Giveaway campaigns switch it off
   // — flipping showBarcode back on restores the scan-to-redeem flow with no code change.
