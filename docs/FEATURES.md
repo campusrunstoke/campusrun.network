@@ -3,7 +3,7 @@
 A plain-English inventory of everything built and live. Update this when we ship
 something new. Companion doc: [TODO.md](TODO.md).
 
-_Last updated: 2026-09-28 · everything below is live on www.campusrun.network_
+_Last updated: 2026-09-29 · everything below is live on www.campusrun.network_
 
 ---
 
@@ -58,6 +58,26 @@ Two layouts:
 - **Banner** (all iPhones) — classic layout with a banner strip; links on the back via ⓘ
 
 Both ship inside the same pass; the phone picks. Apple caps front buttons at two.
+
+### Front-of-pass buttons (iOS 27 poster only)
+
+Apple calls these **Featured Actions**. We choose the *type*; Apple writes the words.
+We cannot set custom button text. Tested on a real iOS 27 device:
+
+| Link | Apple action type | What the button says | Tracked |
+|---|---|---|---|
+| Giveaway | `viewOffersRewards` | **View Offers and Rewards** | ✅ |
+| Map | `order` | **Order Delivery and Pickup** | ✅ |
+
+Other types we confirmed render: `shop` → *Shop Online or In-App*,
+`membershipBenefits` → *View Membership Benefits*.
+
+**Apple's `place` ("Open in Maps") does not work on our pass type.** Tested six ways —
+coordinates in both places Apple allows, Apple and Google map URLs, tracked and direct,
+poster and classic style. Apple documents venue coordinates as event-ticket-only.
+Don't re-test this.
+
+The classic/banner style shows **no** front buttons at all — links live on the back (ⓘ).
 
 ### Redemption — two ways, switchable per campaign
 

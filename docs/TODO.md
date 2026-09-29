@@ -3,15 +3,15 @@
 Working list, ordered by what blocks what. Tick things off as they land.
 Companion doc: [FEATURES.md](FEATURES.md).
 
-_Last updated: 2026-09-28 · Fallapalooza is **Oct 4** (6 days)_
+_Last updated: 2026-09-29 · Fallapalooza is **Oct 4** (6 days)_
 
 ---
 
 ## 1. Blocked on Kasey
 
 - [ ] **Pick a poster design** (p1–p4) and **a banner design** (b1–b4)
-- [ ] **Report what the two front buttons actually say** on his iOS 27 phone —
-      Apple writes those labels itself and we can't see them without a device
+- [x] ~~Report what the front buttons say~~ — confirmed: *View Offers and Rewards* +
+      *Order Delivery and Pickup*. See FEATURES.md
 - [ ] Confirm the big text should stay **ENTER TO WIN**
 - [ ] **Twilio number + keyword** (see §2)
 - [ ] Which LMU stores will let a cashier scan — only needed if we ever switch this
@@ -27,13 +27,11 @@ yet open a text message. To finish it:
 - [ ] Decide the **keyword** students text (POCARI? WIN?)
 - [ ] Decide whether they get an **auto-reply** confirming entry
 - [ ] Point the giveaway link at `sms:+1XXXXXXXXXX&body=KEYWORD` instead of the placeholder
-- [ ] **Test that a redirect to an `sms:` link actually opens Messages from inside a
-      Wallet pass** — this is unproven and is the riskiest unknown left
+- [x] ~~Test that an `sms:` redirect opens Messages from a pass~~ — **proven working**
 - [ ] Build the Twilio webhook that receives replies and records the entry
 - [ ] Add entries to the dashboard as their own number
 - [ ] Decide what happens to a student who texts the wrong thing
-- [ ] Verify the sms: redirect opens Messages from inside a pass (test card is live:
-      /c/pocari-smstest — no Twilio needed for this)
+- [x] ~~Verify the sms: redirect opens Messages from inside a pass~~ — **works**
 
 ## 2b. Capturing who actually entered
 
@@ -75,7 +73,7 @@ hand Pocari a list of entrants we need to collect and store real data:
 
 - [ ] Add a pass on **iOS 27** and confirm the poster renders crisp, not blurred
 - [ ] Add a pass on an **older iPhone** and confirm the banner fallback looks right
-- [ ] Confirm **both front buttons work and are counted**
+- [x] ~~Confirm both front buttons work and are counted~~ — done
 - [ ] Confirm back-of-pass links work on the banner version
 - [ ] Confirm the **web coupon** (Android path) works end to end
 - [ ] Re-tap the same card and confirm it re-issues the *same* pass, not a second one
