@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { passes, walletCampaigns, walletLinks } from "@/lib/db/schema";
 import type { LinkAction } from "@/lib/wallet/types";
+import { SMS_DISCLOSURE } from "@/lib/sms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,12 +94,19 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
       </div>
 
       {links.some((l) => l.action === "giveaway") && (
-        <a
-          href={`/r/${serial}/giveaway`}
-          className="mt-8 flex h-16 w-full items-center justify-center rounded-2xl bg-gold font-display text-lg font-bold text-ink-deep transition-transform active:scale-[0.98]"
-        >
-          {links.find((l) => l.action === "giveaway")?.label || "Enter Giveaway"}
-        </a>
+        <>
+          <a
+            href={`/r/${serial}/giveaway`}
+            className="mt-8 flex h-16 w-full items-center justify-center rounded-2xl bg-gold font-display text-lg font-bold text-ink-deep transition-transform active:scale-[0.98]"
+          >
+            {links.find((l) => l.action === "giveaway")?.label || "Enter Giveaway"}
+          </a>
+          {/* Carriers require the disclosure right beside the opt-in, not buried below. */}
+          <p className="mt-3 text-center text-xs leading-relaxed text-muted">
+            {SMS_DISCLOSURE.replace("campusrun.network/terms", "")}
+            <a href="/terms" className="underline underline-offset-2">campusrun.network/terms</a>
+          </p>
+        </>
       )}
 
       {links.filter((l) => l.action !== "giveaway").length > 0 && (

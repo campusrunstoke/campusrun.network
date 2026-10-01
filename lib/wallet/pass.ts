@@ -2,6 +2,7 @@ import { PKPass, PassType } from "passkit-generator";
 import { walletConfig, walletConfigured, WalletNotConfiguredError } from "./config";
 import { passAssets } from "./assets";
 import { siteUrl } from "@/lib/campaigns";
+import { SMS_DISCLOSURE } from "@/lib/sms";
 import type { Pass, WalletCampaign, WalletLink } from "@/lib/db/schema";
 import type { LinkAction } from "./types";
 
@@ -46,6 +47,10 @@ function buildBackFields(
     value: `${base}/r/${serial}/${l.action}`,
     attributedValue: `<a href="${base}/r/${serial}/${l.action}">${l.label || LINK_LABELS[l.action]}</a>`,
   }));
+  // The giveaway enters by text, so the pass carries the carrier-required SMS disclosure.
+  if (links.some((l) => l.action === "giveaway")) {
+    rows.push({ key: "sms", label: "TEXT TO ENTER", value: SMS_DISCLOSURE, attributedValue: SMS_DISCLOSURE });
+  }
   if (terms) rows.push({ key: "terms", label: "TERMS", value: terms, attributedValue: terms });
   rows.push({
     key: "receipt",

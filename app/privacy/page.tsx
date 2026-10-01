@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <p className="text-[16px] leading-[1.6] text-white/80">
           How Campus Run handles the information you share with us.
           <br />
-          <span className="text-white/60">Last updated August 2026.</span>
+          <span className="text-white/60">Last updated October 2026.</span>
         </p>
       </PageHeader>
 
@@ -79,6 +79,28 @@ export default function PrivacyPage() {
               "The brand or partner running the activation you opted into.",
               "Service providers that help us operate — such as hosting and email delivery — under confidentiality obligations.",
               "Anyone we are required to share it with by law.",
+            ]}
+          />
+        </Section>
+
+        <Section label="Text messages (SMS)">
+          <p className="mb-4 text-[16px] leading-[1.7] text-muted">
+            If you text a keyword to a Campus Run number — for example, to enter a
+            giveaway — we use your phone number and your replies only to run that
+            promotion and to reply to you.
+          </p>
+          <BulletList
+            items={[
+              <>
+                <strong className="font-semibold">
+                  No mobile information will be shared with third parties or affiliates
+                  for marketing or promotional purposes.
+                </strong>{" "}
+                Text messaging opt-in data and consent will not be shared with any third
+                parties, except service providers that deliver our messages.
+              </>,
+              "Message and data rates may apply. Message frequency varies.",
+              "Reply STOP at any time to stop receiving messages, or HELP for help.",
             ]}
           />
         </Section>

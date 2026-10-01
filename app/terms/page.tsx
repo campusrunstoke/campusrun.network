@@ -16,7 +16,7 @@ export default function TermsPage() {
         <p className="text-[16px] leading-[1.6] text-white/80">
           The terms that govern your use of campusrun.network.
           <br />
-          <span className="text-white/60">Last updated August 2026.</span>
+          <span className="text-white/60">Last updated October 2026.</span>
         </p>
       </PageHeader>
 
@@ -42,6 +42,34 @@ export default function TermsPage() {
             are set out in a separate written agreement between you and Campus Run. These
             terms cover general use of the site itself.
           </p>
+        </Section>
+
+        <Section label="Text message promotions">
+          <div className="space-y-4 text-[16px] leading-[1.7] text-muted">
+            <p>
+              Some activations let you enter a giveaway by texting a keyword to a Campus
+              Run number. By sending that text, you agree to receive replies about that
+              promotion — typically a confirmation, one optional question, and a thank-you
+              (up to 3 messages per entry). We only text people who text us first, and we
+              don&rsquo;t send marketing messages beyond the promotion you entered.
+            </p>
+            <p>
+              Message and data rates may apply. Message frequency varies. Reply{" "}
+              <span className="font-semibold text-ink">STOP</span> to opt out at any time,
+              or <span className="font-semibold text-ink">HELP</span> for help. You can
+              also email{" "}
+              <a href={`mailto:${EMAIL}`} className="font-medium text-ink underline">
+                {EMAIL}
+              </a>
+              . Carriers are not liable for delayed or undelivered messages. Entering
+              never requires a purchase; each giveaway&rsquo;s official rules govern
+              eligibility and winner selection. See our{" "}
+              <a href="/privacy" className="font-medium text-ink underline">
+                Privacy Policy
+              </a>{" "}
+              for how we handle your number.
+            </p>
+          </div>
         </Section>
 
         <Section label="Your information">
