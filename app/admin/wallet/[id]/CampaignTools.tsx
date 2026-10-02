@@ -9,6 +9,7 @@ type Store = { id: string; name: string; pin: string | null; legacyPin: boolean 
 
 export default function CampaignTools({
   campaignId,
+  defaultPrefix,
   active,
   usesRedemption,
   cards,
@@ -16,6 +17,7 @@ export default function CampaignTools({
   stores,
 }: {
   campaignId: string;
+  defaultPrefix: string;
   active: boolean;
   usesRedemption: boolean;
   cards: Card[];
@@ -27,7 +29,7 @@ export default function CampaignTools({
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [qrCard, setQrCard] = useState<Card | null>(null);
-  const [mintPrefix, setMintPrefix] = useState(cards[0]?.id.split("-")[0] ?? "");
+  const [mintPrefix, setMintPrefix] = useState(cards[0]?.id.split("-")[0] ?? defaultPrefix);
   const [mintCount, setMintCount] = useState("");
   const [mintMsg, setMintMsg] = useState<string | null>(null);
   const [editPinId, setEditPinId] = useState<string | null>(null);
@@ -89,7 +91,7 @@ export default function CampaignTools({
           <Step n={1} title="Create card links">
             <p className="mb-3 text-xs leading-relaxed text-muted">
               One link per physical card. The prefix starts every card id (e.g.{" "}
-              <code className="font-mono text-ink">daps-0001-x7k2</code>). Make one per card you&apos;re printing — extras are fine.
+              <code className="font-mono text-ink">{mintPrefix || "brand"}-0001-x7k2</code>). Make one per card you&apos;re printing — extras are fine.
             </p>
             <div className="flex items-end gap-2">
               <Field label="Prefix" value={mintPrefix} onChange={setMintPrefix} mono placeholder="daps" />

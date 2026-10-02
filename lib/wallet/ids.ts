@@ -54,3 +54,29 @@ export function detectDevice(userAgent: string | null | undefined): DeviceType {
   if (/android/.test(ua)) return "android";
   return "other";
 }
+
+/**
+ * Signed, expiring link for the designer's "send a test pass to my phone". The phone
+ * isn't logged in, so the link itself is the credential: HMAC over campaign + expiry,
+ * keyed with the wallet secret. Previews never touch a campaign's numbers.
+ */
+const PREVIEW_TTL_MS = 2 * 3600 * 1000;
+
+export function signPreviewToken(campaignId: string, now = Date.now()): string | null {
+  const secret = process.env.WALLET_TOKEN_SECRET;
+  if (!secret) return null;
+  const exp = Math.floor((now + PREVIEW_TTL_MS) / 1000).toString(36);
+  const sig = createHmac("sha256", secret).update(`preview:${campaignId}.${exp}`).digest("base64url").slice(0, 32);
+  return `${campaignId}.${exp}.${sig}`;
+}
+
+/** The campaign id a preview token grants, or null if it's forged or expired. */
+export function verifyPreviewToken(token: string, now = Date.now()): string | null {
+  const secret = process.env.WALLET_TOKEN_SECRET;
+  const [campaignId, exp, sig] = token.split(".");
+  if (!secret || !campaignId || !exp || !sig) return null;
+  const expected = createHmac("sha256", secret).update(`preview:${campaignId}.${exp}`).digest("base64url").slice(0, 32);
+  if (!timingSafeEqualStr(sig, expected)) return null;
+  if (parseInt(exp, 36) * 1000 < now) return null;
+  return campaignId;
+}

@@ -23,6 +23,7 @@ import { cardUrl } from "@/lib/wallet/cards";
 import AdminShell from "../../AdminShell";
 import TapsChart from "./TapsChart";
 import CampaignTools from "./CampaignTools";
+import { appleButtonLabel, featuredLinks } from "@/lib/wallet/featured";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,13 +101,15 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
   const hasDesign = Boolean(campaign.backgroundPng || campaign.stripPng || campaign.logoPng);
   const tested = installs.installed + installs.removed + installs.redeemed > 0;
   const checklist = [
-    { done: hasDesign, label: "Pass design set", hint: "Logo, artwork and text on the pass" },
-    { done: links.length > 0, label: "Links set", hint: "Where each button on the pass goes" },
-    { done: cards.length > 0, label: "Cards minted", hint: "Card links ready to encode on NFC chips" },
-    { done: tested, label: "Tested on a phone", hint: "Tap a card or scan its QR, add the pass to Wallet" },
-    { done: campaign.active, label: "Campaign live", hint: "Paused campaigns hand out the web page, not a Wallet pass" },
+    { done: hasDesign, label: "Pass design set", hint: "Logo, artwork and text on the pass", href: `/admin/wallet/${id}/design` },
+    { done: links.length > 0, label: "Links set", hint: "Where each button on the pass goes", href: `/admin/wallet/${id}/design` },
+    { done: cards.length > 0, label: "Cards minted", hint: "Card links ready to encode on NFC chips", href: "#cards" },
+    { done: tested, label: "Tested on a phone", hint: "Tap a card or scan its QR, add the pass to Wallet", href: "#cards" },
+    { done: campaign.active, label: "Campaign live", hint: "Paused campaigns hand out the web page, not a Wallet pass", href: "#links" },
   ];
   const setupDone = checklist.every((c) => c.done);
+  // Only links that actually become iOS 27 front buttons get a button label.
+  const front = campaign.passStyle === "poster" ? featuredLinks(links) : [];
 
   return (
     <AdminShell name={admin.name} role={admin.role}>
@@ -124,6 +127,12 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/admin/wallet/${id}/design`}
+            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:border-ink/30"
+          >
+            ✎ Design pass
+          </Link>
           <Link
             href={`/admin/wallet/${id}/report`}
             className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-ink-deep"
@@ -158,7 +167,8 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       <Section id="setup" title="Setup" sub={setupDone ? "Everything's in place — this campaign is ready for the field." : "Work top to bottom. A campaign is ready when every step is checked."}>
         <ol className="grid gap-2 sm:grid-cols-5">
           {checklist.map((c, i) => (
-            <li key={c.label} className={`rounded-2xl border p-3 ${c.done ? "border-line bg-white" : "border-gold bg-gold/10"}`}>
+            <li key={c.label}>
+              <Link href={c.href} className={`block h-full rounded-2xl border p-3 transition-colors ${c.done ? "border-line bg-white hover:border-ink/30" : "border-gold bg-gold/10 hover:bg-gold/20"}`}>
               <div className="flex items-center gap-2">
                 <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${c.done ? "bg-ink text-white" : "border border-ink/30 text-ink"}`}>
                   {c.done ? "✓" : i + 1}
@@ -166,6 +176,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
                 <span className="text-sm font-semibold text-ink">{c.label}</span>
               </div>
               <p className="mt-1.5 text-xs leading-relaxed text-muted">{c.hint}</p>
+              </Link>
             </li>
           ))}
         </ol>
@@ -236,6 +247,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       {/* 3–4 · cards, links, stores, on/off */}
       <CampaignTools
         campaignId={id}
+        defaultPrefix={campaign.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 20)}
         active={campaign.active}
         usesRedemption={usesRedemption}
         cards={cardRows}
@@ -243,7 +255,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
           action: l.action,
           label: l.label,
           destination: l.destination,
-          appleButton: APPLE_BUTTON[l.featuredType ?? DEFAULT_FEATURED[l.action] ?? ""] ?? null,
+          appleButton: front.find((f) => f.link.action === l.action) ? appleButtonLabel(front.find((f) => f.link.action === l.action)!.type) : null,
         }))}
         stores={storeRows.map((s) => ({
           id: s.id,
@@ -288,14 +300,6 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
   );
 }
 
-// Apple writes the Featured Action wording itself; show the exact words people see.
-const APPLE_BUTTON: Record<string, string> = {
-  viewOffersRewards: "View Offers and Rewards",
-  order: "Order Delivery and Pickup",
-  shop: "Shop Online or In-App",
-  membershipBenefits: "View Membership Benefits",
-};
-const DEFAULT_FEATURED: Record<string, string> = { giveaway: "viewOffersRewards", map: "order", website: "shop", shop: "shop" };
 
 const EVENT_NAME: Record<string, string> = {
   tap: "Card tapped",

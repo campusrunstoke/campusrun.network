@@ -3,6 +3,11 @@ import { walletConfig, walletConfigured, WalletNotConfiguredError } from "./conf
 import { passAssets } from "./assets";
 import { siteUrl } from "@/lib/campaigns";
 import { SMS_DISCLOSURE } from "@/lib/sms";
+import { featuredLinks } from "./featured";
+
+// Labels and terms are typed in the designer, and Wallet renders attributedValue as HTML.
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 import type { Pass, WalletCampaign, WalletLink } from "@/lib/db/schema";
 import type { LinkAction } from "./types";
 
@@ -40,19 +45,22 @@ function buildBackFields(
   terms: string | null,
   links: FeaturedLink[],
   cardId: string,
+  linkUrl: (l: FeaturedLink) => string,
+  preview: boolean,
 ) {
   const rows = links.map((l) => ({
     key: `link-${l.action}`,
     label: LINK_LABELS[l.action],
-    value: `${base}/r/${serial}/${l.action}`,
-    attributedValue: `<a href="${base}/r/${serial}/${l.action}">${l.label || LINK_LABELS[l.action]}</a>`,
+    value: linkUrl(l),
+    attributedValue: `<a href="${linkUrl(l)}">${escapeHtml(l.label || LINK_LABELS[l.action])}</a>`,
   }));
   // The giveaway enters by text, so the pass carries the carrier-required SMS disclosure.
   if (links.some((l) => l.action === "giveaway")) {
     rows.push({ key: "sms", label: "TEXT TO ENTER", value: SMS_DISCLOSURE, attributedValue: SMS_DISCLOSURE });
   }
-  if (terms) rows.push({ key: "terms", label: "TERMS", value: terms, attributedValue: terms });
-  rows.push({
+  if (terms) rows.push({ key: "terms", label: "TERMS", value: terms, attributedValue: escapeHtml(terms) });
+  // A preview has no real pass behind it, so there is no receipt page to send people to.
+  if (!preview) rows.push({
     key: "receipt",
     label: "BOUGHT IT?",
     value: `${base}/receipt/${serial}`,
@@ -62,16 +70,24 @@ function buildBackFields(
   return rows;
 }
 
+/**
+ * `preview` builds a design-check pass for the designer's "send to my phone": no web
+ * service (nothing registers, so no pass_added), and links go straight to their real
+ * destinations (no click is logged) — a preview never touches a campaign's numbers.
+ */
 export async function buildPass(
   pass: Pick<Pass, "serial" | "cardId">,
   campaign: WalletCampaign,
-  authToken: string,
+  authToken: string | null,
   links: FeaturedLink[] = [],
+  { preview = false }: { preview?: boolean } = {},
 ): Promise<Buffer> {
   if (!walletConfigured) throw new WalletNotConfiguredError();
 
   const passTypeIdentifier = campaign.passTypeIdentifier || walletConfig.passTypeIdentifier!;
   const base = siteUrl();
+  const linkUrl = (l: FeaturedLink) =>
+    (preview || l.featuredDirect) && l.destination ? l.destination : `${base}/r/${pass.serial}/${l.action}`;
 
   // Per-campaign artwork falls back to the Campus Run placeholders, so a campaign with
   // no design set still produces a valid, installable pass.
@@ -111,10 +127,11 @@ export async function buildPass(
       organizationName: walletConfig.organizationName,
       description: `${campaign.brand} — ${campaign.name}`,
       serialNumber: pass.serial,
-      // Per-pass secret Apple echoes back on every web-service call (register/get/unregister).
-      authenticationToken: authToken,
-      // Base for the Apple PassKit web service. Apple appends /v1/… to this.
-      webServiceURL: `${base}/api/wallet`,
+      // Per-pass secret Apple echoes back on every web-service call (register/get/unregister),
+      // and the base for that web service (Apple appends /v1/…). Previews have neither.
+      ...(preview || !authToken
+        ? {}
+        : { authenticationToken: authToken, webServiceURL: `${base}/api/wallet` }),
       foregroundColor: campaign.fgColor || "rgb(0, 59, 92)",
       backgroundColor: campaign.bgColor || "rgb(255, 255, 255)",
       labelColor: campaign.labelColor || "rgb(110, 110, 115)",
@@ -142,7 +159,7 @@ export async function buildPass(
     value: campaign.secondaryValue || "Tap for the map",
     textAlignment,
   };
-  const backFields = buildBackFields(pass.serial, base, campaign.terms, links, pass.cardId);
+  const backFields = buildBackFields(pass.serial, base, campaign.terms, links, pass.cardId, linkUrl, preview);
 
   if (isPoster) {
     // posterGeneric (iOS 27) is the full-bleed poster layout built for coupons and
@@ -169,36 +186,16 @@ export async function buildPass(
 
     // Up to two Featured Actions, rendered as cards under the pass. These are our
     // tracked pass-through URLs, so a front-of-pass tap is counted like any other click.
-    // Apple's default type per link, overridable per link via featuredType. The wording
-    // on the button comes from the type — we choose the type, Apple writes the words.
-    const DEFAULT_TYPE: Partial<Record<LinkAction, string>> = {
-      giveaway: "viewOffersRewards",
-      // Apple's "place" action never renders on posterGeneric — tested six ways, and
-      // its venue coordinates are documented as event-ticket-only. "order" is the
-      // closest type that actually appears, and it stays tracked.
-      map: "order",
-      website: "shop",
-      shop: "shop",
-      video: "watchTrailer",
-    };
-    const ORDER: LinkAction[] = ["giveaway", "map", "website", "shop", "video"];
-    const featured = ORDER.flatMap((action) => {
-      const link = links.find((l) => l.action === action);
-      if (!link) return [];
-      const type = link.featuredType || DEFAULT_TYPE[action];
-      if (!type) return [];
-      // A link may point straight at its destination instead of through our tracker —
-      // some Apple action types only render when the URL matches the action.
+    // Which links qualify, and their Apple type, comes from lib/wallet/featured — the
+    // same rule the designer previews. We choose the type; Apple writes the words.
+    pk.featuredActions = featuredLinks(links).map(({ link, type }) => ({
+      identifier: link.action,
+      type: type as never,
       // Everything goes through our tracker so the tap is counted. Only a link
       // explicitly marked direct bypasses it, for action types that won't render
       // otherwise — that trade is opt-in, never the default.
-      const url =
-        link.featuredDirect && link.destination
-          ? link.destination
-          : `${base}/r/${pass.serial}/${action}`;
-      return [{ identifier: action, type: type as never, url }];
-    });
-    pk.featuredActions = featured.slice(0, 2);
+      url: linkUrl(link),
+    }));
   } else {
     pk.type = "coupon";
     if (!campaign.hideHeaderText) pk.headerFields.push(header);

@@ -304,6 +304,10 @@ export const walletCampaigns = pgTable(
     logoPng: text("logo_png"), // top-left on the pass
     iconPng: text("icon_png"), // notifications + pass list
     stripPng: text("strip_png"), // wide banner behind the coupon
+    // The pass designer's editable source: artboard layers (images, text, glows) for the
+    // poster and banner. The PNG columns above are what it exports — passes are built from
+    // those, so a campaign designed by hand (no layers) works exactly the same.
+    design: jsonb("design"),
     createdBy: uuid("created_by").references(() => admins.id, { onDelete: "set null" }),
   },
   (t) => [index("wallet_campaigns_brand_idx").on(t.brand)],
@@ -333,6 +337,29 @@ export const walletCards = pgTable(
 );
 
 export type WalletCard = typeof walletCards.$inferSelect;
+
+/**
+ * Files uploaded in the pass designer — product shots, logos, brand fonts — referenced
+ * by the campaign's design layers. Base64 in Postgres like the pass artwork: a few
+ * hundred KB each (images are downscaled in the browser before upload), no blob store.
+ */
+export const walletAssets = pgTable(
+  "wallet_assets",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => walletCampaigns.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(), // image | font
+    name: text("name"), // original filename, shown in the designer
+    mime: text("mime").notNull(),
+    data: text("data").notNull(), // base64
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("wallet_assets_campaign_idx").on(t.campaignId)],
+);
+
+export type WalletAsset = typeof walletAssets.$inferSelect;
 
 /**
  * Pass-through link destinations (§4). Each link on the pass points at

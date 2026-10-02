@@ -153,3 +153,87 @@ export const walletCampaignSchema = z.object({
 });
 
 export type WalletCampaignInput = z.infer<typeof walletCampaignSchema>;
+
+/* ------------------------------- pass designer ------------------------------- */
+
+const num = z.number().finite();
+const color = z.string().trim().max(40).regex(/^(#[0-9a-fA-F]{3,8}|rgba?\([\d\s.,%]+\))$/, "invalid color");
+const layerBase = {
+  id: z.string().max(40),
+  x: num,
+  y: num,
+  opacity: z.number().min(0).max(1),
+  hidden: z.boolean().optional(),
+  name: z.string().max(80).optional(),
+};
+const layer = z.discriminatedUnion("type", [
+  z.object({ ...layerBase, type: z.literal("image"), assetId: z.string().max(60), w: num.min(1), h: num.min(1) }),
+  z.object({
+    ...layerBase,
+    type: z.literal("text"),
+    text: z.string().max(400),
+    font: z.string().max(80),
+    size: num.min(4).max(1200),
+    weight: z.number().int().min(100).max(900),
+    color,
+    align: z.enum(["left", "center", "right"]),
+    lineHeight: num.min(0.5).max(3),
+    letterSpacing: num.min(-50).max(200),
+    glow: z.object({ color, blur: num.min(0).max(200) }).nullable(),
+  }),
+  z.object({ ...layerBase, type: z.literal("glow"), r: num.min(1).max(4000), inner: color, mid: color }),
+]);
+const fill = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("solid"), color }),
+  z.object({ type: z.literal("linear"), from: color, to: color, angle: num }),
+]);
+const artboard = z.object({ background: fill, layers: z.array(layer).max(60) });
+
+export const designSchema = z.object({
+  version: z.literal(1),
+  poster: artboard,
+  banner: artboard,
+  logoAssetId: z.string().max(60).nullable(),
+  fonts: z.array(z.object({ assetId: z.string().max(60), name: z.string().max(120) })).max(10),
+});
+
+/** Destinations a pass link may point at: web pages, or a pre-filled text (giveaways). */
+const linkDestination = z
+  .string()
+  .trim()
+  .max(2048)
+  .refine((u) => /^(https?:\/\/[^\s]+|sms:[^\s]+)$/i.test(u), "must start with https://, http:// or sms:");
+
+/** PUT /api/admin/wallet/campaigns/[id]/design — the designer's whole save. */
+export const designSaveSchema = z.object({
+  design: designSchema,
+  fields: z.object({
+    passStyle: z.enum(["poster", "coupon"]),
+    headerText: optionalText(60),
+    hideHeaderText: z.boolean(),
+    offerLabel: optionalText(40),
+    offerValue: optionalText(60),
+    secondaryLabel: optionalText(40),
+    secondaryValue: optionalText(60),
+    terms: optionalText(600),
+    textAlign: z.enum(["left", "center", "right"]),
+    fgColor: color,
+    bgColor: color,
+    labelColor: color,
+    suppressHeaderDarkening: z.boolean(),
+    showBarcode: z.boolean(),
+  }),
+  links: z
+    .array(
+      z.object({
+        action: z.enum(["map", "website", "video", "shop", "giveaway"]),
+        label: optionalText(80),
+        destination: linkDestination,
+        featuredType: z.enum(["auto", "none", "viewOffersRewards", "order", "shop", "membershipBenefits"]),
+      }),
+    )
+    .max(5)
+    .refine((ls) => new Set(ls.map((l) => l.action)).size === ls.length, "each link type can only be used once"),
+});
+
+export type DesignSave = z.infer<typeof designSaveSchema>;
