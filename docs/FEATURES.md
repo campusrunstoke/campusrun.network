@@ -59,6 +59,14 @@ Two layouts:
 
 Both ship inside the same pass; the phone picks. Apple caps front buttons at two.
 
+**Pass designer** (Campaign → ✎ Design pass) — built in the portal, no code:
+- Drag-and-drop artwork for both layouts: images, text in system or uploaded brand fonts
+  (with neon glow), radial glows, solid/gradient backgrounds, layers, snapping, undo
+- Overlay showing where Apple draws its own text; live mock of both iPhone layouts
+- Wording & colours, and Buttons & links with the exact words Apple puts on each button
+- **Test on my phone** — QR for a real pass from the saved design; test passes never count
+- Save & publish applies to every new tap; passes already in a Wallet keep their old look
+
 ### Front-of-pass buttons (iOS 27 poster only)
 
 Apple calls these **Featured Actions**. We choose the *type*; Apple writes the words.
@@ -129,7 +137,7 @@ a printable QR → hand the list to whoever encodes the cards. Mint more any tim
 - Comparison table with headline numbers for every activation
 
 ### Reporting
-- **Weekly report page** — print-ready, this week vs cumulative, redemptions by store
+- **Brand report** — totals first, per-link people/taps, busiest hour, redemptions when used; Print / save as PDF
 - **CSV exports** — raw wallet events (per campaign), ratings, redirect taps, inbound leads
 
 ---
@@ -159,7 +167,8 @@ a printable QR → hand the list to whoever encodes the cards. Mint more any tim
 
 - Per-person accounts with real passwords (argon2-hashed, never stored in plain text)
 - Sessions stored server-side, revocable on logout, expire after 7 days
-- Four sections: Submissions · Campaigns · Intake · Wallet
+- Light theme matching the main site. Campaigns (home) · Brand intake · Legacy (Ratings & taps, Link campaigns)
+- Each campaign: setup checklist → results → cards (mint, download CSV for encoding, test) → links → activity log; times in Pacific
 
 ---
 
