@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
  * own place afterwards (designer, then the campaign's Cards section), so this stays a
  * ten-second form — and lands you straight in the designer.
  */
-export default function NewWalletCampaignForm() {
+export default function NewWalletCampaignForm({ initialBrand = "" }: { initialBrand?: string }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [brand, setBrand] = useState("");
+  const [open, setOpen] = useState(Boolean(initialBrand));
+  const [brand, setBrand] = useState(initialBrand);
   const [name, setName] = useState("");
   const [venue, setVenue] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting">("idle");

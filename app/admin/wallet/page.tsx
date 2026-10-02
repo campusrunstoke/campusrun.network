@@ -11,9 +11,11 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Wallet · Campus Run" };
 
 /** Cross-campaign view (§6): every activation with its headline numbers, side by side. */
-export default async function WalletPage() {
+export default async function WalletPage({ searchParams }: { searchParams: Promise<{ newBrand?: string }> }) {
   const admin = await requireAdmin();
   const rows = await campaignHeadlines();
+  // Arriving from a Brand intake inquiry: open the form with the brand filled in.
+  const { newBrand } = await searchParams;
 
   return (
     <AdminShell name={admin.name} role={admin.role}>
@@ -35,7 +37,7 @@ export default async function WalletPage() {
         </p>
       )}
 
-      <NewWalletCampaignForm />
+      <NewWalletCampaignForm initialBrand={typeof newBrand === "string" ? newBrand.slice(0, 80) : ""} />
 
       {rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line bg-white py-16 text-center">

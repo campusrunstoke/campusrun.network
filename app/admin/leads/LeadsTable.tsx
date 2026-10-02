@@ -259,10 +259,17 @@ export default function LeadsTable({ rows }: { rows: LeadRow[] }) {
                       >
                         Reply by email
                       </a>
+                      {/* Signed on? Carry the brand straight into a new campaign. */}
+                      <a
+                        href={`/admin/wallet?newBrand=${encodeURIComponent(r.company)}`}
+                        className="rounded-lg bg-ink px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-ink-deep"
+                      >
+                        Start campaign →
+                      </a>
                       <button
                         onClick={() => del(r.id, r.company)}
                         disabled={busyId === r.id}
-                        className="rounded-lg border border-line px-3.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-50"
+                        className="rounded-lg border border-line px-3.5 py-1.5 text-xs font-medium text-muted transition-colors hover:border-red-500/40 hover:text-red-700 disabled:opacity-50"
                       >
                         Delete
                       </button>
