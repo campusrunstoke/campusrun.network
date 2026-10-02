@@ -49,10 +49,10 @@ export default async function LeadsPage() {
   return (
     <AdminShell name={admin.name} role={admin.role}>
       <div className="mb-6">
-        <h1 className="font-display text-xl font-bold text-white">Intake</h1>
-        <p className="mt-1 text-sm text-[#9AA6B8]">
+        <h1 className="font-display text-2xl font-bold tracking-[-0.01em] text-ink">Brand intake</h1>
+        <p className="mt-1 text-sm text-muted">
           Inquiries from{" "}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-xs text-[#7DE3FF]">
+          <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs text-ink/70">
             /work-with-us
           </code>
         </p>
@@ -66,7 +66,7 @@ export default async function LeadsPage() {
       </section>
 
       {!emailConfigured && (
-        <p className="mb-6 rounded-xl border border-[#FFCC00]/20 bg-[#FFCC00]/[0.06] px-4 py-3 text-xs text-[#E3C878]">
+        <p className="mb-6 rounded-xl border border-gold/50 bg-gold/10 px-4 py-3 text-xs text-ink">
           Email notifications are off — set the SMTP_* and LEAD_NOTIFY_TO environment
           variables to get an email on every new inquiry. Everything is still saved here.
         </p>
@@ -79,13 +79,13 @@ export default async function LeadsPage() {
 
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
-      <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#6B7688]">
+    <div className="rounded-2xl border border-line bg-white p-4 backdrop-blur-sm">
+      <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted">
         {label}
       </div>
       <div className="mt-2">
         <span
-          className={`font-display text-2xl font-bold tabular-nums ${accent ? "text-[#FFCC00]" : "text-white"}`}
+          className={`font-display text-2xl font-bold tabular-nums ${accent ? "text-ink" : "text-ink"}`}
         >
           {value}
         </span>

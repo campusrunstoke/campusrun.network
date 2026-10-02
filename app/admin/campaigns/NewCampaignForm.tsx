@@ -55,7 +55,7 @@ export default function NewCampaignForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mb-6 inline-flex h-10 items-center gap-2 rounded-xl bg-[#FFCC00] px-4 font-display text-sm font-bold text-[#0A1420] transition-colors hover:bg-[#FFD633]"
+        className="mb-6 inline-flex h-10 items-center gap-2 rounded-xl bg-gold px-4 font-display text-sm font-bold text-ink-deep transition-colors hover:bg-gold-deep"
       >
         <span className="text-lg leading-none">+</span> New campaign
       </button>
@@ -65,13 +65,13 @@ export default function NewCampaignForm() {
   return (
     <form
       onSubmit={submit}
-      className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm"
+      className="mb-6 rounded-2xl border border-line bg-white p-5 backdrop-blur-sm"
     >
       {/* redirect toggle: off = rating page, on = bounce to the client's site */}
-      <label className="mb-4 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
+      <label className="mb-4 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-line bg-white p-3.5">
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-white">Redirect to a website</div>
-          <div className="mt-0.5 text-[11px] leading-snug text-[#9AA6B8]">
+          <div className="text-sm font-semibold text-ink">Redirect to a website</div>
+          <div className="mt-0.5 text-[11px] leading-snug text-muted">
             Off = stoked rating page. On = count the tap, then send them to the client&apos;s URL.
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function NewCampaignForm() {
             onChange={setDest}
             placeholder="https://www.redbull.com"
           />
-          <p className="mt-1.5 text-[11px] leading-snug text-[#6B7688]">
+          <p className="mt-1.5 text-[11px] leading-snug text-muted">
             Each tap auto-appends utm_source/medium/campaign + a unique cr_cid before
             redirecting. Any utm_ params you bake into the URL here are kept.
           </p>
@@ -101,11 +101,11 @@ export default function NewCampaignForm() {
       )}
 
       {preview && (
-        <div className="mt-4 rounded-lg border border-white/10 bg-black/30 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wider text-[#6B7688]">
+        <div className="mt-4 rounded-lg border border-line bg-fill px-3 py-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted">
             NFC link {type === "redirect" && "· then → " + (dest || "destination")}
           </div>
-          <code className="break-all text-xs text-[#7DE3FF]">{preview}</code>
+          <code className="break-all text-xs text-ink/70">{preview}</code>
         </div>
       )}
 
@@ -115,14 +115,14 @@ export default function NewCampaignForm() {
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="h-9 rounded-lg bg-[#FFCC00] px-4 text-sm font-bold text-[#0A1420] transition-colors hover:bg-[#FFD633] disabled:opacity-60"
+          className="h-9 rounded-lg bg-gold px-4 text-sm font-bold text-ink-deep transition-colors hover:bg-gold-deep disabled:opacity-60"
         >
           {status === "submitting" ? "Creating…" : "Create campaign"}
         </button>
         <button
           type="button"
           onClick={() => { setOpen(false); reset(); }}
-          className="h-9 rounded-lg border border-white/10 px-4 text-sm text-[#9AA6B8] hover:text-white"
+          className="h-9 rounded-lg border border-line px-4 text-sm text-muted hover:text-ink"
         >
           Cancel
         </button>
@@ -139,7 +139,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
       aria-checked={on}
       onClick={() => onChange(!on)}
       className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-        on ? "bg-[#FFCC00]" : "bg-white/15"
+        on ? "bg-gold" : "bg-line"
       }`}
     >
       <span
@@ -166,12 +166,12 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-[#9AA6B8]">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-muted">{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors placeholder:text-[#5A6577] focus:border-[#FFCC00]/50 ${mono ? "font-mono" : ""}`}
+        className={`h-10 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-ink/40 ${mono ? "font-mono" : ""}`}
       />
     </label>
   );

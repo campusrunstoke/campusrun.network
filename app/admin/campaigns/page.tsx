@@ -65,9 +65,9 @@ export default async function CampaignsPage() {
   return (
     <AdminShell name={admin.name} role={admin.role}>
       <div className="mb-6">
-        <h1 className="font-display text-xl font-bold text-white">Campaigns</h1>
-        <p className="text-sm text-[#6B7688]">
-          One link per drop — copy it onto the client&apos;s NFC card.
+        <h1 className="font-display text-2xl font-bold tracking-[-0.01em] text-ink">Link campaigns</h1>
+        <p className="mt-1 text-sm text-muted">
+          Legacy · one redirect link per drop, from before Wallet passes. For new activations, use Campaigns.
         </p>
       </div>
 

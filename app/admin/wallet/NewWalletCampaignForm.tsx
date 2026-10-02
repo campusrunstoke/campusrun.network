@@ -64,28 +64,33 @@ export default function NewWalletCampaignForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mb-6 inline-flex h-10 items-center gap-2 rounded-xl bg-[#FFCC00] px-4 font-display text-sm font-bold text-[#0A1420] transition-colors hover:bg-[#FFD633]"
+        className="mb-6 inline-flex h-10 items-center gap-2 rounded-full bg-gold px-5 text-sm font-bold text-ink-deep transition-colors hover:bg-gold-deep"
       >
-        <span className="text-lg leading-none">+</span> New wallet campaign
+        <span className="text-lg leading-none">+</span> New campaign
       </button>
     );
   }
 
   return (
-    <form onSubmit={submit} className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+    <form onSubmit={submit} className="mb-6 rounded-2xl border border-line bg-white p-5">
+      <h2 className="font-display text-lg font-bold text-ink">New campaign</h2>
+      <p className="mb-4 mt-0.5 text-sm text-muted">
+        Creates the campaign, its links and its card links in one go. The pass design (logo, artwork, colors, wording)
+        is set up separately for now — until it is, the pass shows Campus Run placeholder art.
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Brand" value={brand} onChange={setBrand} placeholder="Pocari Sweat" />
         <Field label="Campaign name" value={name} onChange={setName} placeholder="Fallapalooza coupon" />
         <Field label="Venue / event" value={venue} onChange={setVenue} placeholder="LMU — Fallapalooza, Oct 4" />
         <div className="grid grid-cols-2 gap-3">
           <Field label="Card prefix" value={cardPrefix} onChange={setCardPrefix} placeholder="pocari" mono />
-          <Field label="# cards to mint" value={cardCount} onChange={setCardCount} placeholder="200" mono />
+          <Field label="# card links" value={cardCount} onChange={setCardCount} placeholder="200" mono />
         </div>
       </div>
 
       <div className="mt-5">
-        <div className="mb-2 text-xs font-medium text-[#9AA6B8]">
-          Pass links <span className="text-[#6B7688]">— each is tracked before it redirects. Leave blank to omit.</span>
+        <div className="mb-2 text-xs font-medium text-muted">
+          Pass links <span className="text-muted">— each is tracked before it redirects. Leave blank to omit.</span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {ACTIONS.map((a) => (
@@ -100,20 +105,20 @@ export default function NewWalletCampaignForm() {
         </div>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
 
       <div className="mt-4 flex gap-2">
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="h-9 rounded-lg bg-[#FFCC00] px-4 text-sm font-bold text-[#0A1420] hover:bg-[#FFD633] disabled:opacity-60"
+          className="h-10 rounded-full bg-gold px-5 text-sm font-bold text-ink-deep hover:bg-gold-deep disabled:opacity-60"
         >
           {status === "submitting" ? "Creating…" : "Create + mint cards"}
         </button>
         <button
           type="button"
           onClick={() => { setOpen(false); reset(); }}
-          className="h-9 rounded-lg border border-white/10 px-4 text-sm text-[#9AA6B8] hover:text-white"
+          className="h-10 rounded-full border border-line px-5 text-sm text-ink/70 hover:text-ink"
         >
           Cancel
         </button>
@@ -127,12 +132,12 @@ function Field({
 }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; mono?: boolean }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-[#9AA6B8]">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-muted">{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-[#5A6577] focus:border-[#FFCC00]/50 ${mono ? "font-mono" : ""}`}
+        className={`h-10 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none placeholder:text-muted/70 focus:border-ink/40 ${mono ? "font-mono" : ""}`}
       />
     </label>
   );

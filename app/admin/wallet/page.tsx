@@ -19,15 +19,16 @@ export default async function WalletPage() {
     <AdminShell name={admin.name} role={admin.role}>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-bold text-white">Wallet campaigns</h1>
-          <p className="mt-1 text-sm text-[#9AA6B8]">
-            NFC tap → Apple Wallet pass → link clicks → store redemption. One row per activation.
+          <h1 className="font-display text-2xl font-bold tracking-[-0.01em] text-ink">Campaigns</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted">
+            One row per brand activation. A student taps a card → gets the brand&apos;s Apple Wallet pass → taps its links
+            (→ redeems in store, for coupons). Open a campaign to mint cards, watch results live, and pull the brand report.
           </p>
         </div>
       </div>
 
       {!walletConfigured && (
-        <p className="mb-6 rounded-xl border border-[#FFCC00]/20 bg-[#FFCC00]/[0.06] px-4 py-3 text-xs text-[#E3C878]">
+        <p className="mb-6 rounded-2xl border border-gold bg-gold/10 px-4 py-3 text-xs text-ink">
           Apple Wallet signing isn&apos;t configured yet — taps are tracked and the web coupon is
           served, but no .pkpass is issued. Set the WALLET_* environment variables once the Apple
           cert arrives.
@@ -37,37 +38,36 @@ export default async function WalletPage() {
       <NewWalletCampaignForm />
 
       {rows.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] py-16 text-center">
-          <p className="text-sm text-[#9AA6B8]">No wallet campaigns yet.</p>
+        <div className="rounded-2xl border border-dashed border-line bg-white py-16 text-center">
+          <p className="text-sm text-muted">No wallet campaigns yet.</p>
         </div>
       ) : (
-        <section className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.02]">
+        <section className="overflow-x-auto rounded-2xl border border-line bg-white">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="text-left text-[10px] uppercase tracking-[0.14em] text-[#6B7688]">
+              <tr className="border-b border-line text-left text-xs font-semibold text-muted">
                 <Th>Campaign</Th>
                 <Th right>Cards</Th>
-                <Th right>People</Th>
-                <Th right>Passes</Th>
-                <Th right>Clicked</Th>
+                <Th right>People reached</Th>
+                <Th right>Added to Wallet</Th>
+                <Th right>Tapped a link</Th>
                 <Th right>Redeemed</Th>
-                <Th right>→ Pass</Th>
-                <Th right>→ Redeem</Th>
+                <Th right>Tap → Wallet</Th>
                 <Th></Th>
               </tr>
             </thead>
             <tbody>
               {rows.map(({ campaign, funnel, conv, cards }) => (
-                <tr key={campaign.id} className="border-t border-white/[0.06] hover:bg-white/[0.03]">
+                <tr key={campaign.id} className="border-t border-line first:border-t-0 hover:bg-fill">
                   <td className="px-4 py-3">
                     <Link href={`/admin/wallet/${campaign.id}`} className="block">
-                      <div className="font-display text-sm font-semibold text-white">
+                      <div className="text-sm font-semibold text-ink">
                         {campaign.name}
                       </div>
-                      <div className="mt-0.5 text-xs text-[#9AA6B8]">
-                        <span className="text-[#7DE3FF]">{campaign.brand}</span>
+                      <div className="mt-0.5 text-xs text-muted">
+                        <span className="font-medium text-ink/80">{campaign.brand}</span>
                         {campaign.venue ? ` · ${campaign.venue}` : ""}
-                        {!campaign.active && <span className="ml-2 text-[#6B7688]">· paused</span>}
+                        {!campaign.active && <span className="ml-2 rounded-full bg-line px-1.5 py-0.5 text-[10px] font-semibold text-muted">Paused</span>}
                       </div>
                     </Link>
                   </td>
@@ -77,11 +77,10 @@ export default async function WalletPage() {
                   <Td>{funnel.clickers}</Td>
                   <Td accent>{funnel.redemptions}</Td>
                   <Td muted>{conv.tapToPass}%</Td>
-                  <Td muted>{conv.tapToRedemption}%</Td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/wallet/${campaign.id}`}
-                      className="rounded-lg border border-white/10 px-3 py-1 text-xs text-[#9AA6B8] hover:text-white"
+                      className="rounded-full border border-line px-3 py-1 text-xs font-medium text-ink/70 hover:border-ink/30 hover:text-ink"
                     >
                       Open
                     </Link>
@@ -116,7 +115,7 @@ function Td({
   return (
     <td
       className={`whitespace-nowrap px-4 py-3 text-right font-mono text-xs tabular-nums ${
-        accent ? "font-semibold text-[#FFCC00]" : muted ? "text-[#6B7688]" : "text-[#E5E9F0]"
+        accent ? "text-ink" : muted ? "text-muted" : "text-ink"
       }`}
     >
       {children}

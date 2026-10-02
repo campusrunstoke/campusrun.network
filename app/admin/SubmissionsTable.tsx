@@ -55,19 +55,19 @@ export default function SubmissionsTable({
   }, [rows, query]);
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
+    <section className="rounded-2xl border border-line bg-white backdrop-blur-sm">
       {/* toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3.5">
         <div className="flex items-center gap-3">
-          <h2 className="font-display text-sm font-semibold text-white">Submissions</h2>
-          <span className="font-mono text-[11px] text-[#6B7688]">
+          <h2 className="font-display text-sm font-semibold text-ink">Submissions</h2>
+          <span className="font-mono text-[11px] text-muted">
             {query ? `${filtered.length} match` : `${shown} of ${total.toLocaleString()}`}
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <svg
-              className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#5A6577]"
+              className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted/70"
               viewBox="0 0 24 24"
               fill="none"
             >
@@ -78,7 +78,7 @@ export default function SubmissionsTable({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Filter email / drop / brand / card"
-              className="h-9 w-64 max-w-[60vw] rounded-lg border border-white/10 bg-white/5 pl-8 pr-3 text-xs text-white outline-none transition-colors placeholder:text-[#5A6577] focus:border-[#FFCC00]/50"
+              className="h-9 w-64 max-w-[60vw] rounded-lg border border-line bg-white pl-8 pr-3 text-xs text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-ink/40"
             />
           </div>
           <ExportMenu />
@@ -89,7 +89,7 @@ export default function SubmissionsTable({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="text-left text-[10px] uppercase tracking-[0.14em] text-[#6B7688]">
+            <tr className="text-left text-[10px] uppercase tracking-[0.14em] text-muted">
               <Th>Time (UTC)</Th>
               <Th>Type</Th>
               <Th>Stoke</Th>
@@ -104,7 +104,7 @@ export default function SubmissionsTable({
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6B7688]">
+                <td colSpan={9} className="px-4 py-12 text-center text-sm text-muted">
                   {query ? "No matches." : "No submissions yet."}
                 </td>
               </tr>
@@ -112,9 +112,9 @@ export default function SubmissionsTable({
             {filtered.map((r) => (
               <tr
                 key={r.id}
-                className="border-t border-white/[0.06] transition-colors hover:bg-white/[0.03]"
+                className="border-t border-line transition-colors hover:bg-fill"
               >
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-[#9AA6B8]">
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">
                   {fmtTs(r.ts)}
                 </td>
                 <td className="px-4 py-3">
@@ -124,14 +124,14 @@ export default function SubmissionsTable({
                   {r.kind === "rating" && r.rating ? (
                     <Meter n={r.rating} />
                   ) : (
-                    <span className="text-[#4A5468]">—</span>
+                    <span className="text-muted/70">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   {r.email ? (
-                    <span className="font-mono text-xs text-[#E5E9F0]">{r.email}</span>
+                    <span className="font-mono text-xs text-ink">{r.email}</span>
                   ) : (
-                    <span className="text-xs text-[#4A5468]">
+                    <span className="text-xs text-muted/70">
                       {r.kind === "tap" ? "—" : "— no email"}
                     </span>
                   )}
@@ -145,7 +145,7 @@ export default function SubmissionsTable({
                 <td className="px-4 py-3">
                   <Chip value={r.c} />
                 </td>
-                <td className="max-w-[220px] truncate px-4 py-3 text-xs text-[#6B7688]">
+                <td className="max-w-[220px] truncate px-4 py-3 text-xs text-muted">
                   {r.ua ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -153,7 +153,7 @@ export default function SubmissionsTable({
                     onClick={() => del(r.id, r.kind)}
                     disabled={deletingId === r.id}
                     title="Delete"
-                    className="rounded-md border border-white/10 p-1.5 text-[#6B7688] transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-40"
+                    className="rounded-md border border-line p-1.5 text-muted transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-40"
                   >
                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
                       <path
@@ -184,8 +184,8 @@ function TypeBadge({ kind }: { kind: "rating" | "tap" }) {
     <span
       className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
         isTap
-          ? "border-[#A78BFA]/30 bg-[#A78BFA]/10 text-[#C4B5FD]"
-          : "border-[#FFCC00]/30 bg-[#FFCC00]/10 text-[#FFCC00]"
+          ? "border-violet-200 bg-violet-50 text-violet-700"
+          : "border-gold/70 bg-gold/15 text-ink"
       }`}
     >
       {isTap ? "Tap" : "Rating"}
@@ -200,23 +200,23 @@ function Meter({ n }: { n: number }) {
         {[1, 2, 3, 4, 5].map((i) => (
           <span
             key={i}
-            className={`h-3.5 w-1.5 rounded-full ${i <= n ? "bg-[#FFCC00]" : "bg-white/10"}`}
+            className={`h-3.5 w-1.5 rounded-full ${i <= n ? "bg-gold" : "bg-fill"}`}
           />
         ))}
       </div>
-      <span className="font-mono text-xs font-semibold text-white">{n}</span>
+      <span className="font-mono text-xs font-semibold text-ink">{n}</span>
     </div>
   );
 }
 
 function Chip({ value, accent }: { value: string | null; accent?: boolean }) {
-  if (!value) return <span className="text-xs text-[#4A5468]">—</span>;
+  if (!value) return <span className="text-xs text-muted/70">—</span>;
   return (
     <span
       className={`inline-block rounded-md border px-2 py-0.5 font-mono text-[11px] ${
         accent
-          ? "border-[#22D3EE]/25 bg-[#22D3EE]/10 text-[#7DE3FF]"
-          : "border-white/10 bg-white/5 text-[#C3CBD9]"
+          ? "border-sky-200 bg-sky-50 text-ink/70"
+          : "border-line bg-white text-ink"
       }`}
     >
       {value}

@@ -80,9 +80,14 @@ export async function deviceSplit(campaignId: string) {
     .groupBy(walletEvents.deviceType);
 }
 
+/** Taps per link, plus how many different passes (people) tapped it — repeats inflate count, not people. */
 export async function clicksByAction(campaignId: string) {
   return db
-    .select({ action: walletEvents.action, count: sql<number>`count(*)::int` })
+    .select({
+      action: walletEvents.action,
+      count: sql<number>`count(*)::int`,
+      people: sql<number>`count(distinct pass_serial)::int`,
+    })
     .from(walletEvents)
     .where(and(eq(walletEvents.campaignId, campaignId), eq(walletEvents.type, "click")))
     .groupBy(walletEvents.action)
@@ -113,23 +118,31 @@ export async function redemptionsByMethod(campaignId: string) {
     .groupBy(walletEvents.method);
 }
 
-/** Redemptions by hour of day (0–23) and day of week (0=Sun…6=Sat), in UTC. */
+/**
+ * Every activation so far is in Southern California, so hour-of-day and day-of-week
+ * read in Pacific time — "the booth peaked at 2pm", not "21:00 UTC". Inlined as a raw
+ * literal (not a bind parameter) so SELECT and GROUP BY are the identical expression.
+ */
+export const REPORT_TZ = "America/Los_Angeles";
+const local = sql.raw(`(created_at at time zone '${REPORT_TZ}')`);
+
+/** Redemptions by hour of day (0–23) and day of week (0=Sun…6=Sat), in Pacific time. */
 export async function redemptionsByHour(campaignId: string) {
   return db
-    .select({ hour: sql<number>`extract(hour from created_at)::int`, count: sql<number>`count(*)::int` })
+    .select({ hour: sql<number>`extract(hour from ${local})::int`, count: sql<number>`count(*)::int` })
     .from(walletEvents)
     .where(and(eq(walletEvents.campaignId, campaignId), eq(walletEvents.type, "redemption")))
-    .groupBy(sql`extract(hour from created_at)`)
-    .orderBy(sql`extract(hour from created_at)`);
+    .groupBy(sql`extract(hour from ${local})`)
+    .orderBy(sql`extract(hour from ${local})`);
 }
 
 export async function redemptionsByDow(campaignId: string) {
   return db
-    .select({ dow: sql<number>`extract(dow from created_at)::int`, count: sql<number>`count(*)::int` })
+    .select({ dow: sql<number>`extract(dow from ${local})::int`, count: sql<number>`count(*)::int` })
     .from(walletEvents)
     .where(and(eq(walletEvents.campaignId, campaignId), eq(walletEvents.type, "redemption")))
-    .groupBy(sql`extract(dow from created_at)`)
-    .orderBy(sql`extract(dow from created_at)`);
+    .groupBy(sql`extract(dow from ${local})`)
+    .orderBy(sql`extract(dow from ${local})`);
 }
 
 /** Passes still installed vs removed (§6) — from pass state, not events. */
@@ -148,7 +161,7 @@ export async function passInstallState(campaignId: string) {
 
 /**
  * Taps per hour (§6 time-series, "so I can see the booth's peak"). Buckets by the hour
- * in UTC over the campaign's whole tap history; the chart picks the window to show.
+ * (whole-hour offsets, so UTC buckets line up with Pacific hours) over the campaign's whole tap history; the chart picks the window to show.
  */
 export async function tapsByHour(campaignId: string) {
   return db

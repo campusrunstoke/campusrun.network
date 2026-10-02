@@ -1,11 +1,11 @@
 /**
- * Taps per hour — a single-series bar chart, so one hue (gold = the thing we care
- * about), no legend (the title names the series), recessive axis, hover tooltip on
+ * Taps per hour — a single-series bar chart, so one hue (ink; gold is reserved for
+ * the one action on a page), no legend (the title names the series), recessive axis, hover tooltip on
  * every bar via <title>. Server-rendered SVG: no chart library, nothing to load.
  */
 export default function TapsChart({ points }: { points: { t: string; n: number }[] }) {
   if (points.length === 0) {
-    return <p className="text-sm text-[#6B7688]">No taps yet — the peak will show here.</p>;
+    return <p className="text-sm text-muted">No taps yet — the peak will show here.</p>;
   }
 
   // Fill missing hours so the timeline is continuous, and always show at least a
@@ -34,22 +34,21 @@ export default function TapsChart({ points }: { points: { t: string; n: number }
   // Cap bar width so sparse windows don't produce slabs; the row stays left-anchored.
   const bw = Math.min(40, Math.max(2, innerW / shown.length - gap));
 
-  const label = (t: number) => {
-    const d = new Date(t);
-    return `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2, "0")}:00`;
-  };
+  // Pacific time, matching the rest of the dashboard: "10/4 2pm".
+  const fmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", month: "numeric", day: "numeric", hour: "numeric" });
+  const label = (t: number) => fmt.format(new Date(t)).replace(",", "").replace(" AM", "am").replace(" PM", "pm");
   const tickEvery = Math.max(1, Math.ceil(shown.length / 8));
 
   return (
     <div className="overflow-x-auto">
       <svg viewBox={`0 0 ${W} ${H}`} className="h-44 w-full min-w-[480px]" role="img" aria-label="Taps per hour">
         {/* recessive gridlines */}
-        {[0, 0.5, 1].map((f) => {
+        {(max >= 2 ? [0, 0.5, 1] : [0, 1]).map((f) => {
           const y = padT + innerH - f * innerH;
           return (
             <g key={f}>
-              <line x1={padL} x2={W - 8} y1={y} y2={y} stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-              <text x={padL - 6} y={y + 3} textAnchor="end" fontSize="9" fill="#6B7688" fontFamily="ui-monospace, monospace">
+              <line x1={padL} x2={W - 8} y1={y} y2={y} stroke="#E5E5EA" strokeWidth="1" />
+              <text x={padL - 6} y={y + 3} textAnchor="end" fontSize="9" fill="#6E6E73" fontFamily="ui-monospace, monospace">
                 {Math.round(f * max)}
               </text>
             </g>
@@ -62,15 +61,15 @@ export default function TapsChart({ points }: { points: { t: string; n: number }
           const y = padT + innerH - h;
           return (
             <g key={p.t}>
-              <rect x={x} y={y} width={bw} height={Math.max(h, p.n ? 2 : 0)} rx={Math.min(4, bw / 2)} fill="#FFCC00">
-                <title>{`${label(p.t)} UTC — ${p.n} tap${p.n === 1 ? "" : "s"}`}</title>
+              <rect x={x} y={y} width={bw} height={Math.max(h, p.n ? 2 : 0)} rx={Math.min(4, bw / 2)} fill="#003B5C">
+                <title>{`${label(p.t)} — ${p.n} tap${p.n === 1 ? "" : "s"}`}</title>
               </rect>
               {/* wider invisible hit target */}
               <rect x={x - gap / 2} y={padT} width={bw + gap} height={innerH} fill="transparent">
-                <title>{`${label(p.t)} UTC — ${p.n} tap${p.n === 1 ? "" : "s"}`}</title>
+                <title>{`${label(p.t)} — ${p.n} tap${p.n === 1 ? "" : "s"}`}</title>
               </rect>
               {i % tickEvery === 0 && (
-                <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="9" fill="#6B7688" fontFamily="ui-monospace, monospace">
+                <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="9" fill="#6E6E73" fontFamily="ui-monospace, monospace">
                   {label(p.t)}
                 </text>
               )}

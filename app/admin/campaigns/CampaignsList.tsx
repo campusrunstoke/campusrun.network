@@ -22,9 +22,9 @@ type Item = {
 export default function CampaignsList({ items }: { items: Item[] }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] py-16 text-center">
-        <p className="text-sm text-[#9AA6B8]">No campaigns yet.</p>
-        <p className="mt-1 text-xs text-[#6B7688]">
+      <div className="rounded-2xl border border-dashed border-line bg-white py-16 text-center">
+        <p className="text-sm text-muted">No campaigns yet.</p>
+        <p className="mt-1 text-xs text-muted">
           Create one to generate an NFC link for a drop.
         </p>
       </div>
@@ -70,16 +70,16 @@ function Card({ item }: { item: Item }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm">
+    <div className="rounded-2xl border border-line bg-white p-5 backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-display text-base font-semibold text-white">{item.name}</h3>
+            <h3 className="font-display text-base font-semibold text-ink">{item.name}</h3>
             <span
               className={`rounded-md border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
                 isRedirect
-                  ? "border-[#A78BFA]/30 bg-[#A78BFA]/10 text-[#C4B5FD]"
-                  : "border-[#FFCC00]/30 bg-[#FFCC00]/10 text-[#FFCC00]"
+                  ? "border-violet-200 bg-violet-50 text-violet-700"
+                  : "border-gold/70 bg-gold/15 text-ink"
               }`}
             >
               {isRedirect ? "Redirect" : "Rating"}
@@ -95,7 +95,7 @@ function Card({ item }: { item: Item }) {
           onClick={del}
           disabled={busy}
           title="Delete campaign"
-          className="rounded-lg border border-white/10 p-1.5 text-[#6B7688] transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-50"
+          className="rounded-lg border border-line p-1.5 text-muted transition-colors hover:border-red-500/40 hover:text-red-300 disabled:opacity-50"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
             <path
@@ -109,9 +109,9 @@ function Card({ item }: { item: Item }) {
       </div>
 
       {isRedirect && item.destinationUrl && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-[#9AA6B8]">
-          <span className="text-[#6B7688]">redirects to</span>
-          <span className="truncate font-mono text-[#C4B5FD]">{item.destinationUrl}</span>
+        <div className="mt-3 flex items-center gap-1.5 text-xs text-muted">
+          <span className="text-muted">redirects to</span>
+          <span className="truncate font-mono text-violet-700">{item.destinationUrl}</span>
         </div>
       )}
 
@@ -119,14 +119,14 @@ function Card({ item }: { item: Item }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={item.qr} alt="NFC QR code" className="h-24 w-24 shrink-0 rounded-lg" />
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] uppercase tracking-wider text-[#6B7688]">NFC link</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted">NFC link</div>
           <div className="mt-1 flex items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded-md bg-black/30 px-2 py-1.5 font-mono text-xs text-[#9AA6B8]">
+            <code className="min-w-0 flex-1 truncate rounded-md bg-fill px-2 py-1.5 font-mono text-xs text-muted">
               {item.url}
             </code>
             <button
               onClick={copy}
-              className="shrink-0 rounded-md border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1.5 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
+              className="shrink-0 rounded-md border border-gold/70 bg-gold/15 px-2.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-gold/30"
             >
               {copied ? "Copied ✓" : "Copy"}
             </button>
@@ -144,19 +144,19 @@ function Card({ item }: { item: Item }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+      <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-            item.active ? "text-[#4ADE80]" : "text-[#6B7688]"
+            item.active ? "text-emerald-600" : "text-muted"
           }`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${item.active ? "bg-[#4ADE80]" : "bg-[#6B7688]"}`} />
+          <span className={`h-1.5 w-1.5 rounded-full ${item.active ? "bg-emerald-500" : "bg-muted"}`} />
           {item.active ? "Active" : "Paused"}
         </span>
         <div className="flex items-center gap-2">
           <a
             href={`/api/export?${isRedirect ? "type=taps&" : ""}b=${encodeURIComponent(item.brand)}&e=${encodeURIComponent(item.eventId)}${item.cardNumber ? `&c=${encodeURIComponent(item.cardNumber)}` : ""}`}
-            className="flex items-center gap-1 rounded-lg border border-[#FFCC00]/30 bg-[#FFCC00]/10 px-2.5 py-1 text-xs font-semibold text-[#FFCC00] transition-colors hover:bg-[#FFCC00]/20"
+            className="flex items-center gap-1 rounded-lg border border-gold/70 bg-gold/15 px-2.5 py-1 text-xs font-semibold text-ink transition-colors hover:bg-gold/30"
             title={isRedirect ? "Download this campaign's taps" : "Download this campaign's submissions"}
           >
               <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none">
@@ -173,7 +173,7 @@ function Card({ item }: { item: Item }) {
           <button
             onClick={toggle}
             disabled={busy}
-            className="rounded-lg border border-white/10 px-3 py-1 text-xs font-medium text-[#9AA6B8] transition-colors hover:text-white disabled:opacity-50"
+            className="rounded-lg border border-line px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-ink disabled:opacity-50"
           >
             {item.active ? "Pause" : "Activate"}
           </button>
@@ -188,8 +188,8 @@ function Chip({ children, accent }: { children: React.ReactNode; accent?: boolea
     <span
       className={`inline-block rounded-md border px-2 py-0.5 font-mono text-[11px] ${
         accent
-          ? "border-[#22D3EE]/25 bg-[#22D3EE]/10 text-[#7DE3FF]"
-          : "border-white/10 bg-white/5 text-[#C3CBD9]"
+          ? "border-sky-200 bg-sky-50 text-ink/70"
+          : "border-line bg-white text-ink"
       }`}
     >
       {children}
@@ -200,8 +200,8 @@ function Chip({ children, accent }: { children: React.ReactNode; accent?: boolea
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="font-display text-lg font-bold text-white">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-[#6B7688]">{label}</div>
+      <div className="font-display text-lg font-bold text-ink">{value}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted">{label}</div>
     </div>
   );
 }
