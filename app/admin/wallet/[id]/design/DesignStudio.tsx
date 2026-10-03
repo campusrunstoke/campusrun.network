@@ -428,7 +428,7 @@ export default function DesignStudio({
         ))}
       </nav>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           {tab === "artwork" && (
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
@@ -444,7 +444,7 @@ export default function DesignStudio({
                   <span className="text-[11px] text-muted">{BW}×{BH}px</span>
                   <label className="ml-auto flex items-center gap-1.5 text-xs text-ink">
                     <input type="checkbox" checked={showGuides} onChange={(e) => setShowGuides(e.target.checked)} className="accent-[#003b5c]" />
-                    Show where Apple puts text
+                    Show Apple’s text on the art
                   </label>
                 </div>
                 <div className="flex flex-wrap gap-2 pb-3">
@@ -463,6 +463,7 @@ export default function DesignStudio({
                     fontsVersion={fontsVersion}
                     selectedId={selectedId}
                     showGuides={showGuides}
+                    apple={fields}
                     onSelect={setSelectedId}
                     onChange={(l) => setLayer(l, true)}
                     onCommit={commitDrag}

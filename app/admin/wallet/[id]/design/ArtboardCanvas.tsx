@@ -30,6 +30,7 @@ export default function ArtboardCanvas({
   fontsVersion,
   selectedId,
   showGuides,
+  apple,
   onSelect,
   onChange,
   onCommit,
@@ -40,6 +41,7 @@ export default function ArtboardCanvas({
   fontsVersion: number;
   selectedId: string | null;
   showGuides: boolean;
+  apple: AppleText;
   onSelect: (id: string | null) => void;
   onChange: (layer: Layer) => void; // live, during a drag
   onCommit: () => void; // drag finished — one undo step
@@ -165,6 +167,8 @@ export default function ArtboardCanvas({
           </div>
         ))}
 
+      {showGuides && <AppleTextOverlay boardKey={boardKey} apple={apple} />}
+
       {snapLines.v && <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-fuchsia-500" />}
       {snapLines.h && <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-fuchsia-500" />}
 
@@ -182,6 +186,60 @@ export default function ArtboardCanvas({
           />
         </div>
       )}
+    </div>
+  );
+}
+
+export type AppleText = {
+  offerLabel: string | null;
+  offerValue: string | null;
+  secondaryLabel: string | null;
+  secondaryValue: string | null;
+  fgColor: string;
+  labelColor: string;
+  textAlign: "left" | "center" | "right";
+};
+
+/**
+ * Apple's wording, faded, exactly where Wallet draws it on this artboard — measured
+ * from the passes on device (same numbers as the live preview). Sizes are in container
+ * units of the artboard's own width, so it stays true at any zoom.
+ */
+function AppleTextOverlay({ boardKey, apple }: { boardKey: ArtboardKey; apple: AppleText }) {
+  const value = apple.offerValue || "Your reward";
+  const label = apple.offerLabel || "COUPON";
+  const ghost = "pointer-events-none absolute inset-0 @container opacity-80 [text-shadow:0_0_1px_rgba(0,0,0,.35)]";
+  const sys = { fontFamily: "-apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif", textAlign: apple.textAlign } as const;
+  const tag = (
+    <span className="absolute right-[2cqw] top-[2cqw] rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+      Apple&apos;s text (not part of the image)
+    </span>
+  );
+
+  if (boardKey === "banner") {
+    // On older iPhones the banner sits under the logo; the big text runs along its top,
+    // nearly full width, and the small label sits below it.
+    const size = Math.max(4.2, Math.min(8.1, 89 / (value.length * 0.47)));
+    return (
+      <div className={ghost} style={sys}>
+        {tag}
+        <div className="absolute inset-x-0 top-0 pl-[9%] pr-[1%] pt-[3%]" style={{ color: apple.fgColor }}>
+          <div className="whitespace-nowrap font-light leading-tight tracking-[-0.01em] outline-1 outline-dashed outline-white/70" style={{ fontSize: `${size}cqw` }}>{value}</div>
+          <div className="mt-[10%] inline-block truncate text-[4.4cqw] outline-1 outline-dashed outline-white/70">{label}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={ghost} style={sys}>
+      {tag}
+      <div className="absolute inset-x-0 bottom-0 p-[4.6cqw] outline-1 outline-dashed outline-white/70" style={{ color: apple.fgColor }}>
+        <div className="text-[3.5cqw] font-semibold uppercase tracking-wide" style={{ color: apple.labelColor }}>{label}</div>
+        <div className="text-[7.7cqw] font-bold leading-tight">{value}</div>
+        <div className="mt-[4.6cqw] text-[3.5cqw] font-semibold uppercase tracking-wide" style={{ color: apple.labelColor }}>{apple.secondaryLabel || "WHERE TO BUY"}</div>
+        <div className="text-[4.6cqw]">{apple.secondaryValue || "Tap for the map"}</div>
+      </div>
     </div>
   );
 }

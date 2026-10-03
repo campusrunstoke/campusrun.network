@@ -15,15 +15,12 @@ export const ARTBOARDS = {
 export type ArtboardKey = keyof typeof ARTBOARDS;
 
 /**
- * Where Apple draws its own text over the artwork — approximate, from on-device tests.
- * Shown as a see-through overlay so art doesn't collide with the wording.
+ * Where Apple's logo sits over the poster art. Apple's own wording isn't a box: the
+ * designer draws the real text, faded, in its measured position (AppleTextOverlay).
  */
 export const SAFE_ZONES: Record<ArtboardKey, { x: number; y: number; w: number; h: number; label: string }[]> = {
-  poster: [
-    { x: 0, y: 0, w: 640, h: 230, label: "Logo" },
-    { x: 0, y: 1230, w: 1125, h: 525, label: "Apple's text (label, big text, footer)" },
-  ],
-  banner: [{ x: 0, y: 90, w: 640, h: 260, label: "Apple's big text sits here" }],
+  poster: [{ x: 0, y: 0, w: 640, h: 230, label: "Logo" }],
+  banner: [],
 };
 
 export type Fill =
