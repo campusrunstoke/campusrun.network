@@ -350,7 +350,11 @@ export default function DesignStudio({
         c.width = w;
         c.height = h;
         renderArtboard(c.getContext("2d")!, k, design[k], images);
-        const blob = await new Promise<Blob>((r) => c.toBlob((b) => r(b!), "image/jpeg", 0.93));
+        // Lossless PNG when it fits the upload limit, so repeated saves never degrade the
+        // art; a very detailed poster falls back to high-quality JPEG.
+        const toBlob = (type: string, q?: number) => new Promise<Blob>((r) => c.toBlob((b) => r(b!), type, q));
+        let blob = await toBlob("image/png");
+        if (blob.size > 3_800_000) blob = await toBlob("image/jpeg", 0.95);
         const up = await fetch(`/api/admin/wallet/campaigns/${campaignId}/artwork/${k}`, { method: "PUT", body: blob });
         if (!up.ok) throw new Error(`couldn't save the ${k} image`);
       }

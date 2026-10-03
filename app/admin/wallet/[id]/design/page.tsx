@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { walletCampaigns, walletCards, walletLinks } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { designSchema, type DesignSave } from "@/lib/validation";
+import { adoptExistingArtwork } from "@/lib/wallet/adopt";
 import AdminShell from "../../../AdminShell";
 import DesignStudio from "./DesignStudio";
 
@@ -25,7 +26,10 @@ export default async function DesignPage({ params }: { params: Promise<{ id: str
 
   // A design saved by an older version (or hand-edited) that no longer validates opens
   // as a fresh canvas rather than crashing the editor; the shipped PNGs are untouched.
-  const parsed = designSchema.safeParse(campaign.design);
+  // A campaign built before the designer has artwork but no layers: adopt that artwork
+  // as layers so the canvas shows the real pass, never a blank that would overwrite it.
+  const design = campaign.design ?? (await adoptExistingArtwork(campaign));
+  const parsed = designSchema.safeParse(design);
 
   const fields: DesignSave["fields"] = {
     passStyle: campaign.passStyle === "poster" ? "poster" : "coupon",
