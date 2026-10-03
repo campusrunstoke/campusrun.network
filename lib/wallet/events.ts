@@ -47,6 +47,38 @@ export async function activeCampaign(campaignId: string) {
 }
 
 /**
+ * Shared cards (a few cards on a table, many people): every phone gets its own pass.
+ * The phone is recognised by the serial it was given before (a cookie set on its first
+ * scan), so the same person scanning again — or scanning another card on the table —
+ * keeps their one pass instead of being counted twice. That serial is only honoured if
+ * it's a shared pass of this same campaign; anything else mints a fresh pass.
+ */
+export async function getOrCreateSharedPass(
+  campaignId: string,
+  cardId: string,
+  rememberedSerial: string | null,
+): Promise<{ serial: string; authToken: string | null; created: boolean }> {
+  if (rememberedSerial && /^[0-9a-f]{32}$/.test(rememberedSerial)) {
+    const [mine] = await db
+      .select({ serial: passes.serial })
+      .from(passes)
+      .where(and(eq(passes.serial, rememberedSerial), eq(passes.campaignId, campaignId), eq(passes.shared, true)))
+      .limit(1);
+    if (mine) {
+      return {
+        serial: mine.serial,
+        authToken: authTokenDerivable() ? passAuthToken(mine.serial) : null,
+        created: false,
+      };
+    }
+  }
+  const serial = newSerial();
+  const authToken = passAuthToken(serial);
+  await db.insert(passes).values({ serial, cardId, campaignId, authTokenHash: hashToken(authToken), shared: true });
+  return { serial, authToken, created: true };
+}
+
+/**
  * Idempotent per (campaign, card): the first tap mints the pass; later taps on the same
  * card return the existing one, so a double-tap never creates a second serial. The
  * authToken is derivable from the serial (HMAC) whenever WALLET_TOKEN_SECRET is set, so

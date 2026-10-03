@@ -264,6 +264,10 @@ export const walletCampaigns = pgTable(
     // Visual style. "coupon" = classic layout (banner strip, works on every iOS).
     // "poster" = iOS 18+ full-bleed background event ticket. Switchable per campaign.
     passStyle: text("pass_style").notNull().default("coupon"),
+    // "shared": a handful of cards on a table, scanned by many people — every phone gets
+    // its own pass. "personal": one card handed to one person, one pass per card.
+    // New campaigns are created shared; existing ones keep their behaviour.
+    cardMode: text("card_mode").notNull().default("personal"),
     // Giveaway campaigns hide the barcode; flip back on to restore the scan-to-redeem flow.
     showBarcode: boolean("show_barcode").notNull().default(true),
     // Kill switch for the giveaway link — hides it from new passes instantly, no redeploy.
@@ -412,9 +416,13 @@ export const passes = pgTable(
     addedAt: timestamp("added_at", { withTimezone: true }), // first device registration
     removedAt: timestamp("removed_at", { withTimezone: true }),
     redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
+    // Minted for one phone on a shared card (many passes per card) rather than as the
+    // card's single pass.
+    shared: boolean("shared").notNull().default(false),
   },
   (t) => [
-    uniqueIndex("passes_campaign_card_uq").on(t.campaignId, t.cardId),
+    // One pass per card — but only for personal cards; shared cards mint one per phone.
+    uniqueIndex("passes_campaign_card_uq").on(t.campaignId, t.cardId).where(sql`${t.shared} = false`),
     index("passes_card_idx").on(t.cardId),
   ],
 );
@@ -553,6 +561,10 @@ export const smsEntries = pgTable(
     enteredAt: timestamp("entered_at", { withTimezone: true }).notNull().defaultNow(),
     answer: text("answer"),
     answeredAt: timestamp("answered_at", { withTimezone: true }),
+    // From the "#CODE" the pass's giveaway button adds to the text: which pass, card and
+    // campaign this entry came from. Null when someone types the keyword themselves.
+    passSerial: text("pass_serial"),
+    cardId: text("card_id"),
   },
   (t) => [
     uniqueIndex("sms_entries_program_phone_uq").on(t.programId, t.phone),

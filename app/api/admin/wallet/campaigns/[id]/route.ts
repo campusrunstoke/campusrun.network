@@ -12,6 +12,8 @@ type Ctx = { params: Promise<{ id: string }> };
 
 const patchSchema = z.object({
   active: z.boolean().optional(),
+  // shared = a few cards on a table (one pass per phone); personal = one card per person.
+  cardMode: z.enum(["shared", "personal"]).optional(),
   // Mint more cards: { mintCards: { prefix, count } }
   mintCards: z
     .object({
@@ -43,6 +45,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   if (d.active !== undefined) {
     await db.update(walletCampaigns).set({ active: d.active }).where(eq(walletCampaigns.id, id));
+  }
+
+  if (d.cardMode) {
+    await db.update(walletCampaigns).set({ cardMode: d.cardMode }).where(eq(walletCampaigns.id, id));
   }
 
   if (d.mintCards) {

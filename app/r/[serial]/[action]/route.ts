@@ -6,6 +6,7 @@ import { logEvent } from "@/lib/wallet/events";
 import { detectDevice } from "@/lib/wallet/ids";
 import { LINK_ACTIONS, type LinkAction } from "@/lib/wallet/types";
 import { siteUrl } from "@/lib/campaigns";
+import { withEntryCode } from "@/lib/sms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,9 @@ export async function GET(req: NextRequest, ctx: { params: Params }) {
     .where(and(eq(walletLinks.campaignId, pass.campaignId), eq(walletLinks.action, action as LinkAction)))
     .limit(1);
 
-  const destination = link?.destination ?? fallback;
+  // A text-to-enter link carries this pass's entry code ("POCARI #7A2F9C"), so the entry
+  // that comes back by text is tied to this exact pass, card and campaign.
+  const destination = link?.destination ? withEntryCode(link.destination, serial) : fallback;
   const userAgent = req.headers.get("user-agent");
 
   after(() =>

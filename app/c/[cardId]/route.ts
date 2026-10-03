@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { walletCards, walletCampaigns } from "@/lib/db/schema";
 import { detectDevice } from "@/lib/wallet/ids";
-import { campaignLinks, getOrCreatePass, logEvent } from "@/lib/wallet/events";
+import { campaignLinks, getOrCreatePass, getOrCreateSharedPass, logEvent } from "@/lib/wallet/events";
 import { buildPass } from "@/lib/wallet/pass";
 import { walletConfigured } from "@/lib/wallet/config";
 import { siteUrl } from "@/lib/campaigns";
@@ -40,16 +40,29 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cardId: str
     return NextResponse.redirect(siteUrl(), { status: 307 });
   }
 
-  const [campaign] = await db
-    .select()
-    .from(walletCampaigns)
-    .where(and(eq(walletCampaigns.id, card.campaignId), eq(walletCampaigns.active, true)))
-    .limit(1);
-
+  const [found] = await db.select().from(walletCampaigns).where(eq(walletCampaigns.id, card.campaignId)).limit(1);
+  // Paused campaigns still track the tap, but hand out the web page instead of a pass.
+  const campaign = found?.active ? found : null;
   const campaignId = card.campaignId;
 
-  // Mint (or reuse) the pass for this card. authToken is non-null only on first mint.
-  const { serial, authToken } = await getOrCreatePass(campaignId, cardId);
+  // Shared cards: one pass per phone, recognised by a cookie from its first scan.
+  // Personal cards: the card's one pass. authToken is non-null only on first mint.
+  const shared = found?.cardMode === "shared";
+  const cookieName = `cr_pass_${campaignId}`;
+  const { serial, authToken } = shared
+    ? await getOrCreateSharedPass(campaignId, cardId, req.cookies.get(cookieName)?.value ?? null)
+    : await getOrCreatePass(campaignId, cardId);
+  // Remember this phone's pass for the rest of the campaign (first-party, not readable by
+  // scripts). Set on every response below, including the pass download itself.
+  const remember = <T extends Response>(res: T): T => {
+    if (shared) {
+      res.headers.append(
+        "Set-Cookie",
+        `${cookieName}=${serial}; Path=/; Max-Age=${180 * 86400}; HttpOnly; Secure; SameSite=Lax`,
+      );
+    }
+    return res;
+  };
 
   after(() =>
     logEvent({
@@ -69,24 +82,24 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cardId: str
       // With WALLET_TOKEN_SECRET set the token is derivable, so a re-tap re-signs the
       // same pass (double-taps still get the Wallet pass). Without it, only the first
       // tap can sign; later taps fall back to the web coupon — same tracking either way.
-      if (!authToken) return webCoupon(serial);
+      if (!authToken) return remember(webCoupon(serial));
       const links = await campaignLinks(campaignId);
       const buffer = await buildPass({ serial, cardId }, campaign, authToken, links);
-      return new Response(new Uint8Array(buffer), {
+      return remember(new Response(new Uint8Array(buffer), {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.apple.pkpass",
           "Content-Disposition": `attachment; filename="campusrun-${cardId}.pkpass"`,
           "Cache-Control": "no-store",
         },
-      });
+      }));
     } catch (err) {
       console.error("[wallet] pass build failed, serving web coupon:", err);
-      return webCoupon(serial);
+      return remember(webCoupon(serial));
     }
   }
 
-  return webCoupon(serial);
+  return remember(webCoupon(serial));
 }
 
 /** Redirect to the tracked web-coupon page (Android + any case we can't serve a .pkpass). */

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Card = { id: string; url: string; active: boolean; qr: string | null; serial: string | null; redeemed: boolean };
+type Card = { id: string; url: string; active: boolean; qr: string | null; serial: string | null; redeemed: boolean; scans: number; people: number };
 type LinkRow = { action: string; label: string | null; destination: string; appleButton: string | null };
 type Store = { id: string; name: string; pin: string | null; legacyPin: boolean };
 
@@ -12,6 +12,7 @@ export default function CampaignTools({
   defaultPrefix,
   active,
   usesRedemption,
+  cardMode,
   cards,
   links,
   stores,
@@ -20,6 +21,7 @@ export default function CampaignTools({
   defaultPrefix: string;
   active: boolean;
   usesRedemption: boolean;
+  cardMode: "shared" | "personal";
   cards: Card[];
   links: LinkRow[];
   stores: Store[];
@@ -84,14 +86,39 @@ export default function CampaignTools({
       <section id="cards" className="mb-10 scroll-mt-32">
         <h2 className="font-display text-lg font-bold text-ink">Cards</h2>
         <p className="mb-4 mt-0.5 text-sm text-muted">
-          Every physical card gets its own link, so each tap is tracked back to that exact card.
+          Every physical card gets its own link, so each scan is tracked back to that exact card.
         </p>
+
+        <div className="mb-4 rounded-2xl border border-line bg-white p-4">
+          <div className="text-sm font-semibold text-ink">How the cards are used</div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {([
+              ["shared", "Shared cards on a table", "A few cards, scanned by many people. Every phone gets its own pass and is counted once, even if it scans again or scans another card."],
+              ["personal", "One card per person", "Each card is handed to one person and has one pass. People reached = cards scanned."],
+            ] as const).map(([mode, title, hint]) => (
+              <button
+                key={mode}
+                onClick={() => {
+                  if (mode === cardMode) return;
+                  if (!window.confirm(`Switch to “${title}”? It applies to scans from now on; earlier passes are kept.`)) return;
+                  patch({ cardMode: mode });
+                }}
+                disabled={busy}
+                className={`rounded-xl border p-3 text-left transition-colors ${mode === cardMode ? "border-ink bg-ink text-white" : "border-line text-ink hover:border-ink/30"}`}
+              >
+                <div className="text-sm font-semibold">{mode === cardMode ? "✓ " : ""}{title}</div>
+                <div className={`mt-1 text-xs leading-relaxed ${mode === cardMode ? "text-white/80" : "text-muted"}`}>{hint}</div>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
           <Step n={1} title="Create card links">
             <p className="mb-3 text-xs leading-relaxed text-muted">
               One link per physical card. The prefix starts every card id (e.g.{" "}
-              <code className="font-mono text-ink">{mintPrefix || "brand"}-0001-x7k2</code>). Make one per card you&apos;re printing — extras are fine.
+              <code className="font-mono text-ink">{mintPrefix || "brand"}-0001-x7k2</code>).{" "}
+              {cardMode === "shared" ? "For a table, make one per card laid out, plus a few spares." : "Make one per card you're printing — extras are fine."}
             </p>
             <div className="flex items-end gap-2">
               <Field label="Prefix" value={mintPrefix} onChange={setMintPrefix} mono placeholder="daps" />
@@ -151,13 +178,15 @@ export default function CampaignTools({
                 <li key={c.id} className="flex flex-wrap items-center gap-2 py-2">
                   <code className="w-full truncate font-mono text-xs text-ink sm:w-40 sm:shrink-0">{c.id}</code>
                   <code className="hidden min-w-0 flex-1 truncate font-mono text-[11px] text-muted sm:block">{c.url}</code>
-                  {c.serial ? (
-                    <span className="hidden shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 sm:inline">tapped</span>
+                  {c.scans > 0 ? (
+                    <span className="hidden shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 sm:inline">
+                      {cardMode === "shared" ? `${c.scans} scan${c.scans === 1 ? "" : "s"} · ${c.people} ${c.people === 1 ? "person" : "people"}` : "tapped"}
+                    </span>
                   ) : (
                     <span className="hidden shrink-0 rounded-full bg-fill px-2 py-0.5 text-[10px] font-medium text-muted sm:inline">not tapped</span>
                   )}
                   <SmallBtn onClick={() => copy(c.url, c.id)}>{copied === c.id ? "✓" : "Copy"}</SmallBtn>
-                  {c.serial && (
+                  {c.serial && cardMode === "personal" && (
                     <>
                       <SmallLink href={`/coupon/${c.serial}`}>Coupon</SmallLink>
                       {usesRedemption && (

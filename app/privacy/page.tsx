@@ -47,6 +47,13 @@ export default function PrivacyPage() {
                 to what it drove.
               </>,
               <>
+                <strong className="font-semibold">A cookie for repeat scans.</strong> When you
+                scan a card at an activation, we set a small cookie on your phone so scanning
+                again gives you the same pass and you aren&rsquo;t counted twice. It&rsquo;s
+                ours alone, and isn&rsquo;t used for advertising or to follow you across other
+                sites.
+              </>,
+              <>
                 <strong className="font-semibold">Technical data.</strong> Standard log
                 data such as IP address, browser and device information, and approximate
                 location, used for security and basic analytics.

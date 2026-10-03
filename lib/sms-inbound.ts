@@ -1,8 +1,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { and, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, like, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { smsEntries, smsMessages, smsOptOuts, smsPrograms, type SmsProgram } from "@/lib/db/schema";
-import { HELP_WORDS, START_WORDS, STOP_WORDS } from "@/lib/sms";
+import { passes, smsEntries, smsMessages, smsOptOuts, smsPrograms, type SmsProgram } from "@/lib/db/schema";
+import { HELP_WORDS, START_WORDS, STOP_WORDS, parseEntryCode } from "@/lib/sms";
 
 /**
  * Twilio signs every webhook: base64(HMAC-SHA1(authToken, url + sorted key/value
@@ -83,9 +83,10 @@ export async function handleInbound(phone: string, rawBody: string, sid: string 
       return send(phone, program, already ? null : program.replyClosed, "closed");
     }
     // The unique (program, phone) index makes this the one-entry-per-person rule, race-proof.
+    const from = await attribute(body, program);
     const inserted = await db
       .insert(smsEntries)
-      .values({ programId: program.id, phone })
+      .values({ programId: program.id, phone, ...from })
       .onConflictDoNothing()
       .returning({ id: smsEntries.id });
     if (inserted.length === 0) return { reply: null, kind: "duplicate_entry", programId: program.id };
@@ -108,6 +109,22 @@ export async function handleInbound(phone: string, rawBody: string, sid: string 
   if (!latestOpen) return { reply: null, kind: "ignored", programId: null };
   const recent = await sentBefore(phone, null, "wrong_keyword", new Date(Date.now() - 86400_000));
   return send(phone, latestOpen, recent ? null : latestOpen.replyWrongKeyword, "wrong_keyword");
+}
+
+/**
+ * Which pass sent this entry: the "#7A2F9C" code the giveaway button pre-filled. Scoped
+ * to the giveaway's wallet campaign when it has one; an unknown or ambiguous code just
+ * leaves the entry unattributed (it still counts).
+ */
+async function attribute(body: string, program: SmsProgram): Promise<{ passSerial: string | null; cardId: string | null }> {
+  const code = parseEntryCode(body);
+  if (!code) return { passSerial: null, cardId: null };
+  const matches = await db
+    .select({ serial: passes.serial, cardId: passes.cardId })
+    .from(passes)
+    .where(and(like(passes.serial, `${code}%`), program.walletCampaignId ? eq(passes.campaignId, program.walletCampaignId) : undefined))
+    .limit(2);
+  return matches.length === 1 ? { passSerial: matches[0].serial, cardId: matches[0].cardId } : { passSerial: null, cardId: null };
 }
 
 async function sentBefore(phone: string, programId: string | null, kind: string, since?: Date) {

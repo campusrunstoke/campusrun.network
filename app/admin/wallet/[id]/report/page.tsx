@@ -13,6 +13,8 @@ import {
   deviceSplit,
   passInstallState,
   tapsByHour,
+  cardLeaderboard,
+  giveawayStats,
 } from "@/lib/wallet/stats";
 import PrintButton from "./PrintButton";
 
@@ -30,7 +32,7 @@ export const metadata: Metadata = { title: "Brand report · Campus Run" };
 async function loadReport(id: string) {
   const today = new Date();
   const weekAgo = new Date(today.getTime() - 7 * 24 * 3600 * 1000);
-  const [week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links] = await Promise.all([
+  const [week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway] = await Promise.all([
     campaignFunnel(id, weekAgo),
     campaignFunnel(id),
     clicksByAction(id),
@@ -40,8 +42,10 @@ async function loadReport(id: string) {
     passInstallState(id),
     tapsByHour(id),
     db.select().from(walletLinks).where(eq(walletLinks.campaignId, id)),
+    cardLeaderboard(id),
+    giveawayStats(id),
   ]);
-  return { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links };
+  return { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway };
 }
 
 const n = (v: number, one: string, many = one + "s") => `${v.toLocaleString()} ${v === 1 ? one : many}`;
@@ -57,7 +61,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const [campaign] = await db.select().from(walletCampaigns).where(eq(walletCampaigns.id, id)).limit(1);
   if (!campaign) notFound();
 
-  const { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links } = await loadReport(id);
+  const { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway } = await loadReport(id);
+  const shared = campaign.cardMode === "shared";
   const ct = conversions(total);
   const taps = devices.reduce((s, d) => s + d.count, 0);
   const ios = devices.find((d) => d.device === "ios")?.count ?? 0;
@@ -89,11 +94,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
         {/* headline numbers */}
         <section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Big label="People reached" value={total.people} sub="different cards tapped" />
+          <Big label="People reached" value={total.people} sub={shared ? "different phones" : "different cards tapped"} />
           <Big label="Added to Wallet" value={total.passesAdded} sub={`${ct.tapToPass}% of people`} />
           <Big label="Tapped through" value={total.clickers} sub={`${ct.tapToClick}% of people`} />
           {usesRedemption ? (
             <Big label="Redeemed" value={total.redemptions} sub={`${ct.tapToRedemption}% of people`} gold />
+          ) : giveaway ? (
+            <Big label="Entered the giveaway" value={giveaway.entries} sub="by text, one per phone number" gold />
           ) : (
             <Big label="Still in Wallet" value={installs.installed} sub="passes kept after the event" />
           )}
@@ -112,9 +119,17 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               </tr>
             </thead>
             <tbody className="tabular-nums">
-              <Row multiWeek={multiWeek} label="Tapped a card" week={week.people} total={total.people} note={`${n(total.taps, "tap")} incl. repeats`} />
+              <Row multiWeek={multiWeek} label={shared ? "Scanned a card" : "Tapped a card"} week={week.people} total={total.people} note={`${n(total.taps, "scan")} incl. repeats`} />
               <Row multiWeek={multiWeek} label="Added the pass to Apple Wallet" week={week.passesAdded} total={total.passesAdded} note={`${ct.tapToPass}%`} />
               <Row multiWeek={multiWeek} label="Tapped a link on the pass" week={week.clickers} total={total.clickers} note={`${ct.tapToClick}%`} />
+              {giveaway && (
+                <tr className="border-t border-line">
+                  <td className="py-2.5 font-medium">Entered the giveaway by text</td>
+                  {multiWeek && <td className="py-2.5 text-right">—</td>}
+                  <td className="py-2.5 text-right font-display text-lg font-bold">{giveaway.entries.toLocaleString()}</td>
+                  <td className="py-2.5 text-right text-xs text-muted">{n(giveaway.answered, "answered the question", "answered the question")}</td>
+                </tr>
+              )}
               {usesRedemption && (
                 <Row multiWeek={multiWeek} label="Redeemed in store" week={week.redemptions} total={total.redemptions} note={`${ct.tapToRedemption}%`} />
               )}
@@ -141,10 +156,21 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <Kv k="iPhone share of taps" v={taps ? `${Math.round((ios / taps) * 100)}%` : "—"} />
               <Kv k="Passes still in Wallet" v={installs.installed.toLocaleString()} />
               <Kv k="Passes removed" v={installs.removed.toLocaleString()} />
-              {peak && <Kv k="Busiest hour" v={`${fmtHour(new Date(peak.bucket))} · ${n(peak.count, "tap")}`} />}
+              {peak && <Kv k="Busiest hour" v={`${fmtHour(new Date(peak.bucket))} · ${n(peak.count, shared ? "scan" : "tap")}`} />}
             </dl>
           </div>
         </section>
+
+        {cards.length > 1 && (
+          <section className="mt-10">
+            <H2>{shared ? "Scans by card on the table" : "Taps by card"}</H2>
+            <dl className="mt-3 space-y-2 text-sm">
+              {cards.slice(0, 15).map((c) => (
+                <Kv key={c.cardId ?? "-"} k={c.cardId ?? "—"} v={shared ? `${n(c.scans, "scan")} · ${n(c.people, "person", "people")}` : n(c.scans, "tap")} />
+              ))}
+            </dl>
+          </section>
+        )}
 
         {usesRedemption && (
           <section className="mt-10">
@@ -175,7 +201,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         )}
 
         <footer className="mt-12 border-t border-line pt-4 text-xs leading-relaxed text-muted">
-          “People reached” counts each physical card once, no matter how many times it was tapped. Every link tap is
+          {shared
+            ? "“People reached” counts each phone once, however many times or cards it scanned; “Added to Wallet” counts phones by Apple's device id."
+            : "“People reached” counts each physical card once, no matter how many times it was tapped."} Every link tap is
           counted by Campus Run before forwarding. Times in Pacific. Generated {fmtDate(today)} · campusrun.network
         </footer>
       </article>

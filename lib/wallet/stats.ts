@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { passes, walletCampaigns, walletCards, walletEvents } from "@/lib/db/schema";
+import { passes, smsEntries, smsPrograms, walletCampaigns, walletCards, walletEvents } from "@/lib/db/schema";
 
 /**
  * Every dashboard number (§6), computed straight off wallet_events so the dashboard
@@ -33,10 +33,16 @@ export function conversions(f: Funnel) {
   };
 }
 
+/**
+ * People are counted by PASS, not by card: on a shared table card every phone gets its
+ * own pass, and on a personal card the card's one pass is the person — so the same
+ * formula is right for both. "Added to Wallet" counts phones by Apple's device id, so
+ * someone who somehow ends up with two passes still counts once.
+ */
 const funnelSelect = {
   taps: sql<number>`count(*) filter (where type = 'tap')::int`,
-  people: sql<number>`count(distinct card_id) filter (where type = 'tap')::int`,
-  passesAdded: sql<number>`count(*) filter (where type = 'pass_added')::int`,
+  people: sql<number>`count(distinct pass_serial) filter (where type = 'tap')::int`,
+  passesAdded: sql<number>`count(distinct coalesce(device_library_id, pass_serial)) filter (where type = 'pass_added')::int`,
   clicks: sql<number>`count(*) filter (where type = 'click')::int`,
   clickers: sql<number>`count(distinct pass_serial) filter (where type = 'click')::int`,
   redemptions: sql<number>`count(*) filter (where type = 'redemption')::int`,
@@ -182,4 +188,36 @@ export async function recentEvents(campaignId: string, limit = 200) {
     .where(eq(walletEvents.campaignId, campaignId))
     .orderBy(desc(walletEvents.createdAt))
     .limit(limit);
+}
+
+/** Scans and people per card — which spots on the table (or which handouts) worked best. */
+export async function cardLeaderboard(campaignId: string) {
+  return db
+    .select({
+      cardId: walletEvents.cardId,
+      scans: sql<number>`count(*)::int`,
+      people: sql<number>`count(distinct pass_serial)::int`,
+    })
+    .from(walletEvents)
+    .where(and(eq(walletEvents.campaignId, campaignId), eq(walletEvents.type, "tap")))
+    .groupBy(walletEvents.cardId)
+    .orderBy(desc(sql`count(*)`));
+}
+
+/**
+ * Text-giveaway results for a wallet campaign (any giveaway linked to it): entries,
+ * answers, and how many entries carried a pass's code — so they tie back to the funnel.
+ */
+export async function giveawayStats(campaignId: string) {
+  const [row] = await db
+    .select({
+      programs: sql<number>`count(distinct ${smsPrograms.id})::int`,
+      entries: sql<number>`count(${smsEntries.id})::int`,
+      answered: sql<number>`count(${smsEntries.answer})::int`,
+      fromPass: sql<number>`count(${smsEntries.passSerial})::int`,
+    })
+    .from(smsPrograms)
+    .leftJoin(smsEntries, eq(smsEntries.programId, smsPrograms.id))
+    .where(eq(smsPrograms.walletCampaignId, campaignId));
+  return row.programs > 0 ? row : null;
 }

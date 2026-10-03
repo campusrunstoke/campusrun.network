@@ -51,3 +51,22 @@ export function fillReply(text: string, v: { brand: string; keyword: string; que
     .replace(/\s{2,}/g, " ")
     .trim();
 }
+
+/**
+ * Entry codes tie a text entry back to the exact pass (and so card and campaign) it came
+ * from. The pass's giveaway button pre-fills "POCARI #7A2F9C": the code is the first six
+ * characters of that pass's random serial — unguessable, and unique across thousands of
+ * passes. Someone who types just "POCARI" still enters; they're just unattributed.
+ */
+export const entryCode = (serial: string) => serial.slice(0, 6).toUpperCase();
+
+/** sms:+1…&body=POCARI → sms:+1…&body=POCARI%20%237A2F9C (only for sms: links with a body). */
+export function withEntryCode(destination: string, serial: string): string {
+  const m = destination.match(/^(sms:[^?&]*[?&](?:.*?&)?body=)([^&]*)(.*)$/i);
+  if (!m) return destination;
+  const body = decodeURIComponent(m[2].replace(/\+/g, " "));
+  return `${m[1]}${encodeURIComponent(`${body} #${entryCode(serial)}`)}${m[3]}`;
+}
+
+/** "POCARI #7A2F9C" → "7A2F9C" (any "#" + 6 hex anywhere in the text). */
+export const parseEntryCode = (body: string) => body.match(/#\s*([0-9a-f]{6})\b/i)?.[1].toLowerCase() ?? null;

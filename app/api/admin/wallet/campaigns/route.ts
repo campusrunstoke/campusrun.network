@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
 
   const [campaign] = await db
     .insert(walletCampaigns)
-    .values({ brand: d.brand, name: d.name, venue: d.venue, createdBy: admin.id })
+    // Shared table cards are how activations run now; switch per campaign if cards go one-per-person.
+    .values({ brand: d.brand, name: d.name, venue: d.venue, cardMode: "shared", createdBy: admin.id })
     .returning();
 
   if (d.links.length) {

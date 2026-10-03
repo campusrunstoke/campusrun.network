@@ -17,6 +17,8 @@ import {
   passInstallState,
   tapsByHour,
   recentEvents,
+  cardLeaderboard,
+  giveawayStats,
 } from "@/lib/wallet/stats";
 import QRCode from "qrcode";
 import { cardUrl } from "@/lib/wallet/cards";
@@ -40,7 +42,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
   const [campaign] = await db.select().from(walletCampaigns).where(eq(walletCampaigns.id, id)).limit(1);
   if (!campaign) notFound();
 
-  const [funnel, devices, actions, stores, methods, byHour, byDow, installs, series, events, cards, links, storeRows, passRows] =
+  const [funnel, devices, actions, stores, methods, byHour, byDow, installs, series, events, cards, links, storeRows, passRows, leaderboard, giveaway] =
     await Promise.all([
       campaignFunnel(id),
       deviceSplit(id),
@@ -56,7 +58,11 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       db.select().from(walletLinks).where(eq(walletLinks.campaignId, id)),
       db.select().from(walletStores).where(eq(walletStores.campaignId, id)).orderBy(desc(walletStores.createdAt)),
       db.select().from(passes).where(eq(passes.campaignId, id)),
+      cardLeaderboard(id),
+      giveawayStats(id),
     ]);
+  const shared = campaign.cardMode === "shared";
+  const scansByCard = new Map(leaderboard.map((r) => [r.cardId, r]));
   const conv = conversions(funnel);
 
   // QR for the cards shown in the console — this is what gets printed on the back of a
@@ -184,11 +190,18 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
 
       {/* 2 · results — every % is "of people reached" (distinct cards tapped), one honest denominator */}
       <Section id="results" title="Results" sub="Each step of the funnel, as a share of the people who tapped a card.">
-        <div className={`grid grid-cols-2 gap-3 ${usesRedemption ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
-          <Stat label="People reached" value={funnel.people} sub={`different cards tapped · ${funnel.taps} tap${funnel.taps === 1 ? "" : "s"} incl. repeats`} />
+        <div className={`grid grid-cols-2 gap-3 ${usesRedemption || giveaway ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+          <Stat label="People reached" value={funnel.people} sub={`${shared ? "different phones" : "different cards"} · ${funnel.taps} scan${funnel.taps === 1 ? "" : "s"} incl. repeats`} />
           <Stat label="Added to Wallet" value={funnel.passesAdded} sub={`${conv.tapToPass}% of people`} />
           <Stat label="Tapped a link" value={funnel.clickers} sub={`${conv.tapToClick}% of people · ${funnel.clicks} link tap${funnel.clicks === 1 ? "" : "s"} total`} />
           {usesRedemption && <Stat label="Redeemed" value={funnel.redemptions} sub={`${conv.tapToRedemption}% of people`} />}
+          {giveaway && (
+            <Stat
+              label="Entered the giveaway"
+              value={giveaway.entries}
+              sub={`by text · ${giveaway.answered} answered the question · ${giveaway.fromPass} came from a pass button`}
+            />
+          )}
         </div>
 
         <Panel title="Taps per hour" hint="Pacific time" className="mt-4">
@@ -207,6 +220,13 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
                 ["Other", devices.find((d) => d.device === "other")?.count ?? 0],
               ]}
               total={totalTaps}
+            />
+          </Panel>
+          <Panel title="Scans by card" hint={shared ? "which spots on the table worked" : "taps per card"}>
+            <Rows
+              rows={leaderboard.slice(0, 8).map((r) => [r.cardId ?? "—", r.scans, shared ? `${r.people} people` : undefined])}
+              total={funnel.taps}
+              empty="No scans yet."
             />
           </Panel>
           <Panel title="Passes right now" hint="current state">
@@ -250,7 +270,8 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
         defaultPrefix={campaign.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 20)}
         active={campaign.active}
         usesRedemption={usesRedemption}
-        cards={cardRows}
+        cardMode={shared ? "shared" : "personal"}
+        cards={cardRows.map((c) => ({ ...c, scans: scansByCard.get(c.id)?.scans ?? 0, people: scansByCard.get(c.id)?.people ?? 0 }))}
         links={links.map((l) => ({
           action: l.action,
           label: l.label,
