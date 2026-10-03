@@ -1,8 +1,8 @@
 import { and, desc, eq, type SQL } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { leads, submissions, taps, walletEvents } from "@/lib/db/schema";
-import { leadsToCsv, submissionsToCsv, tapsToCsv, walletEventsToCsv } from "@/lib/csv";
+import { leads, smsEntries, smsPrograms, submissions, taps, walletEvents } from "@/lib/db/schema";
+import { leadsToCsv, smsEntriesToCsv, submissionsToCsv, tapsToCsv, walletEventsToCsv } from "@/lib/csv";
 import { getCurrentAdmin } from "@/lib/auth/session";
 
 // Node runtime for postgres.js. Gated by the admin session.
@@ -44,6 +44,22 @@ export async function GET(req: NextRequest) {
       .where(eq(walletEvents.campaignId, campaign))
       .orderBy(desc(walletEvents.createdAt));
     return csvResponse(walletEventsToCsv(rows), `campusrun-wallet-${campaign.slice(0, 8)}.csv`);
+  }
+
+  // Giveaway entries: mode=brand (no phone numbers — safe to send) or mode=internal.
+  if (type === "sms") {
+    const program = sp.get("program")?.trim();
+    if (!program || !/^[0-9a-f-]{36}$/i.test(program)) {
+      return NextResponse.json({ ok: false, error: "program required" }, { status: 422 });
+    }
+    const mode = sp.get("mode") === "internal" ? "internal" : "brand";
+    const [p] = await db.select().from(smsPrograms).where(eq(smsPrograms.id, program)).limit(1);
+    if (!p) return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
+    const rows = await db.select().from(smsEntries).where(eq(smsEntries.programId, program)).orderBy(smsEntries.enteredAt);
+    return csvResponse(
+      smsEntriesToCsv(rows, p.question, mode),
+      `${p.keyword.toLowerCase()}-entries${mode === "internal" ? "-INTERNAL-with-phones" : ""}.csv`,
+    );
   }
 
   // Intake leads are their own shape (no e/b/c attribution) — handled separately.

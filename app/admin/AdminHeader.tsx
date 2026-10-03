@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 // tools still hold data people may need, so they stay one click away under Legacy.
 const NAV = [
   { href: "/admin/wallet", label: "Campaigns" },
+  { href: "/admin/sms", label: "Text giveaways" },
   { href: "/admin/leads", label: "Brand intake" },
 ];
 const LEGACY = [

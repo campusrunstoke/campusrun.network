@@ -1,4 +1,4 @@
-import type { Lead, Submission, Tap, WalletEvent } from "./db/schema";
+import type { Lead, SmsEntry, Submission, Tap, WalletEvent } from "./db/schema";
 
 const COLUMNS: { key: keyof Submission; header: string }[] = [
   { key: "id", header: "id" },
@@ -13,7 +13,11 @@ const COLUMNS: { key: keyof Submission; header: string }[] = [
 
 function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const s = value instanceof Date ? value.toISOString() : String(value);
+  let s = value instanceof Date ? value.toISOString() : String(value);
+  // Spreadsheet formula injection: public text starting with = + - @ would run as a
+  // formula in Excel/Sheets. Prefix an apostrophe — but leave phone numbers and plain
+  // numbers (+13105551234, -5) alone; they're data, not formulas.
+  if (/^[=+\-@\t\r]/.test(s) && !/^[+-]?\d[\d\s().-]*$/.test(s)) s = "'" + s;
   // Quote if the cell contains a comma, quote, or newline; double interior quotes.
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
@@ -98,4 +102,17 @@ export function walletEventsToCsv(rows: WalletEvent[]): string {
   const header = WALLET_COLUMNS.map((c) => c.header).join(",");
   const lines = rows.map((row) => WALLET_COLUMNS.map((c) => escapeCell(row[c.key])).join(","));
   return [header, ...lines].join("\n") + "\n";
+}
+
+/**
+ * Giveaway entries. "brand" is the version we hand the brand: no phone numbers (the
+ * privacy policy promises we never share them) — just an entry number, time and answer.
+ * "internal" adds the phone, for contacting the winner.
+ */
+export function smsEntriesToCsv(rows: SmsEntry[], question: string | null, mode: "brand" | "internal"): string {
+  const header = ["entry", "entered_at", "answered_at", question ? `answer: ${question}` : "answer", ...(mode === "internal" ? ["phone"] : [])];
+  const lines = rows.map((r, i) =>
+    [i + 1, r.enteredAt, r.answeredAt, r.answer, ...(mode === "internal" ? [r.phone] : [])].map(escapeCell).join(","),
+  );
+  return [header.map(escapeCell).join(","), ...lines].join("\n") + "\n";
 }

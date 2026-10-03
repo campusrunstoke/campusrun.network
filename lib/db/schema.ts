@@ -506,3 +506,80 @@ export const walletEvents = pgTable(
 
 export type WalletEvent = typeof walletEvents.$inferSelect;
 export type NewWalletEvent = typeof walletEvents.$inferInsert;
+
+/* ------------------------------------------------------------------------------
+ * Text-to-enter giveaways (Twilio). A student texts a KEYWORD to our number; that
+ * text is the entry. We reply once with a bonus question; any reply is the answer.
+ * ---------------------------------------------------------------------------- */
+
+/**
+ * One giveaway = one keyword. Every message we send is stored here, not in code, so
+ * final wording from the brand drops in from the portal without a deploy.
+ */
+export const smsPrograms = pgTable(
+  "sms_programs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    name: text("name").notNull(), // "Pocari Sweat giveaway"
+    keyword: text("keyword").notNull(), // stored uppercase, e.g. POCARI
+    // Optional link to the wallet campaign whose pass sends people here (for reporting).
+    walletCampaignId: uuid("wallet_campaign_id").references(() => walletCampaigns.id, { onDelete: "set null" }),
+    open: boolean("open").notNull().default(true), // closed → "giveaway has ended" reply, no new entries
+    question: text("question"), // the bonus question, as a CSV column header
+    replyEntry: text("reply_entry").notNull(), // sent once, on a successful entry (carries the question)
+    replyAnswer: text("reply_answer").notNull(), // sent once, after their first answer
+    replyWrongKeyword: text("reply_wrong_keyword").notNull(), // first text that isn't the keyword
+    replyHelp: text("reply_help").notNull(), // HELP / INFO
+    replyClosed: text("reply_closed").notNull(), // keyword after entries close
+  },
+  (t) => [uniqueIndex("sms_programs_keyword_uq").on(t.keyword)],
+);
+
+export type SmsProgram = typeof smsPrograms.$inferSelect;
+
+/**
+ * One row per phone number per giveaway — the unique index IS the "one entry per
+ * person" rule, so a race of duplicate texts can't create two entries.
+ */
+export const smsEntries = pgTable(
+  "sms_entries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    programId: uuid("program_id")
+      .notNull()
+      .references(() => smsPrograms.id, { onDelete: "cascade" }),
+    phone: text("phone").notNull(), // E.164 from Twilio; never shared with the brand
+    enteredAt: timestamp("entered_at", { withTimezone: true }).notNull().defaultNow(),
+    answer: text("answer"),
+    answeredAt: timestamp("answered_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("sms_entries_program_phone_uq").on(t.programId, t.phone),
+    index("sms_entries_phone_idx").on(t.phone),
+  ],
+);
+
+export type SmsEntry = typeof smsEntries.$inferSelect;
+
+/** Every text in and out — the audit trail, and what the spend guards count against. */
+export const smsMessages = pgTable(
+  "sms_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    direction: text("direction").notNull(), // in | out
+    phone: text("phone").notNull(), // the student's number (From on in, To on out)
+    body: text("body").notNull(),
+    programId: uuid("program_id").references(() => smsPrograms.id, { onDelete: "set null" }),
+    kind: text("kind"), // out: entry | answer | wrong_keyword | help | closed
+    twilioSid: text("twilio_sid"),
+  },
+  (t) => [index("sms_messages_phone_idx").on(t.phone, t.createdAt), index("sms_messages_created_idx").on(t.createdAt)],
+);
+
+/** Numbers that texted STOP. Twilio blocks sends to them too; this keeps our side honest. */
+export const smsOptOuts = pgTable("sms_opt_outs", {
+  phone: text("phone").primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

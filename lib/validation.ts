@@ -237,3 +237,26 @@ export const designSaveSchema = z.object({
 });
 
 export type DesignSave = z.infer<typeof designSaveSchema>;
+
+/* ---------------------------- text-to-enter giveaways ---------------------------- */
+
+const reply = z.string().trim().min(1, "can't be empty").max(640);
+
+export const smsProgramSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  keyword: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{2,20}$/, "one word, letters and numbers only")
+    .refine((k) => !["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "OPTOUT", "REVOKE", "START", "UNSTOP", "YES", "HELP", "INFO"].includes(k), "that word is reserved by carriers"),
+  walletCampaignId: z.string().uuid().nullable(),
+  question: optionalText(300),
+  replyEntry: reply,
+  replyAnswer: reply,
+  replyWrongKeyword: reply,
+  replyHelp: reply,
+  replyClosed: reply,
+});
+
+export const smsProgramPatchSchema = smsProgramSchema.partial().extend({ open: z.boolean().optional() });
