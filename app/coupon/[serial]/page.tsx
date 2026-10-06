@@ -51,6 +51,21 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
     color: { dark: "#003B5C", light: "#FFFFFF" },
   });
 
+  // Three kinds of pass share this page: a coupon (scan at the register), a text-to-enter
+  // giveaway, and a plain offer (e.g. a free-sample claim link). Say what to do for each —
+  // never "you're in" before someone has actually entered.
+  const hasGiveaway = links.some((l) => l.action === "giveaway");
+  const heading = campaign.showBarcode
+    ? "Your coupon is ready."
+    : hasGiveaway
+      ? "Enter the giveaway."
+      : "Here\u2019s your pass.";
+  const subhead = campaign.showBarcode
+    ? "Show this at the register, or tap a link below."
+    : hasGiveaway
+      ? "Tap the button below. Your texting app opens with your entry ready \u2014 just hit send."
+      : "Tap a link below.";
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
       <div className="font-display text-xs font-bold uppercase tracking-[0.22em] text-ink">
@@ -62,17 +77,19 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
           {campaign.brand}
         </div>
         <h1 className="mt-2 font-display text-4xl font-bold leading-tight text-ink">
-          {campaign.showBarcode ? "Your coupon is ready." : "You\u2019re in."}
+          {heading}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-muted">
-          {campaign.showBarcode ? "Show this at the register, or tap a link below." : "Tap below to enter."}
+          {subhead}
         </p>
       </div>
 
       {/* The coupon card. Gold border = the reward (the Gold Rule). */}
       <div className="mt-8 rounded-3xl border-2 border-gold bg-fill p-6 text-center">
-        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Coupon</div>
-        <div className="mt-3 font-display text-2xl font-bold text-ink">{campaign.name}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+          {campaign.offerLabel || (campaign.showBarcode ? "Coupon" : campaign.brand)}
+        </div>
+        <div className="mt-3 font-display text-2xl font-bold text-ink">{campaign.offerValue || campaign.name}</div>
 
         {/* Giveaway campaigns have nothing for a cashier to scan — hide the code entirely
             rather than showing a QR that does nothing. */}
