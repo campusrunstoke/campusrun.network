@@ -1,8 +1,9 @@
 import { and, desc, eq, type SQL } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { leads, smsEntries, smsPrograms, submissions, taps, walletEvents } from "@/lib/db/schema";
-import { leadsToCsv, smsEntriesToCsv, submissionsToCsv, tapsToCsv, walletEventsToCsv } from "@/lib/csv";
+import { leads, offerClaims, smsEntries, smsPrograms, submissions, taps, walletCampaigns, walletEvents } from "@/lib/db/schema";
+import { leadsToCsv, offerClaimsToCsv, smsEntriesToCsv, submissionsToCsv, tapsToCsv, walletEventsToCsv } from "@/lib/csv";
+import { offerPageSchema } from "@/lib/offer";
 import { getCurrentAdmin } from "@/lib/auth/session";
 
 // Node runtime for postgres.js. Gated by the admin session.
@@ -44,6 +45,24 @@ export async function GET(req: NextRequest) {
       .where(eq(walletEvents.campaignId, campaign))
       .orderBy(desc(walletEvents.createdAt));
     return csvResponse(walletEventsToCsv(rows), `campusrun-wallet-${campaign.slice(0, 8)}.csv`);
+  }
+
+  // Offer page responses: mode=brand (no phone numbers) or mode=internal.
+  if (type === "offer") {
+    const campaign = sp.get("campaign")?.trim();
+    if (!campaign || !/^[0-9a-f-]{36}$/i.test(campaign)) {
+      return NextResponse.json({ ok: false, error: "campaign required" }, { status: 422 });
+    }
+    const mode = sp.get("mode") === "internal" ? "internal" : "brand";
+    const [c] = await db.select({ offerPage: walletCampaigns.offerPage, brand: walletCampaigns.brand }).from(walletCampaigns).where(eq(walletCampaigns.id, campaign)).limit(1);
+    if (!c) return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
+    const page = offerPageSchema.safeParse(c.offerPage);
+    const rows = await db.select().from(offerClaims).where(eq(offerClaims.campaignId, campaign)).orderBy(offerClaims.createdAt);
+    const slug = c.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    return csvResponse(
+      offerClaimsToCsv(rows, page.success ? page.data.question : null, mode),
+      `${slug}-offer-responses${mode === "internal" ? "-INTERNAL-with-phones" : ""}.csv`,
+    );
   }
 
   // Giveaway entries: mode=brand (no phone numbers — safe to send) or mode=internal.

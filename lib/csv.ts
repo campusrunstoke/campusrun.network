@@ -1,4 +1,4 @@
-import type { Lead, SmsEntry, Submission, Tap, WalletEvent } from "./db/schema";
+import type { Lead, OfferClaim, SmsEntry, Submission, Tap, WalletEvent } from "./db/schema";
 
 const COLUMNS: { key: keyof Submission; header: string }[] = [
   { key: "id", header: "id" },
@@ -113,6 +113,24 @@ export function smsEntriesToCsv(rows: SmsEntry[], question: string | null, mode:
   const header = ["entry", "entered_at", "answered_at", question ? `answer: ${question}` : "answer", ...(mode === "internal" ? ["phone"] : [])];
   const lines = rows.map((r, i) =>
     [i + 1, r.enteredAt, r.answeredAt, r.answer, ...(mode === "internal" ? [r.phone] : [])].map(escapeCell).join(","),
+  );
+  return [header.map(escapeCell).join(","), ...lines].join("\n") + "\n";
+}
+
+/**
+ * Offer page responses. "brand" never includes phone numbers (the privacy policy
+ * promises we don't share them); "internal" adds them with the consent record.
+ */
+export function offerClaimsToCsv(rows: OfferClaim[], question: string | null, mode: "brand" | "internal"): string {
+  const header = [
+    "response", "responded_at", "card", question ? `answer: ${question}` : "answer", "opted_in_to_texts",
+    ...(mode === "internal" ? ["phone", "consented_at", "consent_text"] : []),
+  ];
+  const lines = rows.map((r, i) =>
+    [
+      i + 1, r.createdAt, r.cardId, r.answer, r.smsOptIn ? "yes" : "no",
+      ...(mode === "internal" ? [r.phone, r.consentedAt, r.consentText] : []),
+    ].map(escapeCell).join(","),
   );
   return [header.map(escapeCell).join(","), ...lines].join("\n") + "\n";
 }

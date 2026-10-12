@@ -19,12 +19,16 @@ import {
   recentEvents,
   cardLeaderboard,
   giveawayStats,
+  offerStats,
 } from "@/lib/wallet/stats";
 import QRCode from "qrcode";
 import { cardUrl } from "@/lib/wallet/cards";
 import AdminShell from "../../AdminShell";
 import TapsChart from "./TapsChart";
 import CampaignTools from "./CampaignTools";
+import OfferPageEditor from "./OfferPageEditor";
+import { offerPageSchema } from "@/lib/offer";
+import { siteUrl } from "@/lib/campaigns";
 import { appleButtonLabel, featuredLinks } from "@/lib/wallet/featured";
 
 export const runtime = "nodejs";
@@ -42,7 +46,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
   const [campaign] = await db.select().from(walletCampaigns).where(eq(walletCampaigns.id, id)).limit(1);
   if (!campaign) notFound();
 
-  const [funnel, devices, actions, stores, methods, byHour, byDow, installs, series, events, cards, links, storeRows, passRows, leaderboard, giveaway] =
+  const [funnel, devices, actions, stores, methods, byHour, byDow, installs, series, events, cards, links, storeRows, passRows, leaderboard, giveaway, offer] =
     await Promise.all([
       campaignFunnel(id),
       deviceSplit(id),
@@ -60,7 +64,10 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       db.select().from(passes).where(eq(passes.campaignId, id)),
       cardLeaderboard(id),
       giveawayStats(id),
+      offerStats(id),
     ]);
+  const offerPage = offerPageSchema.safeParse(campaign.offerPage);
+  const offerLinked = links.some((l) => l.destination.includes("/offer/{pass}"));
   const shared = campaign.cardMode === "shared";
   const scansByCard = new Map(leaderboard.map((r) => [r.cardId, r]));
   const conv = conversions(funnel);
@@ -160,6 +167,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
           ["#setup", "Setup"],
           ["#results", "Results"],
           ["#cards", "Cards"],
+          ["#offer", "Offer page"],
           ["#links", usesRedemption ? "Links & stores" : "Links"],
           ["#activity", "Activity log"],
         ].map(([href, label]) => (
@@ -190,16 +198,23 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
 
       {/* 2 · results — every % is "of people reached" (distinct cards tapped), one honest denominator */}
       <Section id="results" title="Results" sub="Each step of the funnel, as a share of the people who tapped a card.">
-        <div className={`grid grid-cols-2 gap-3 ${usesRedemption || giveaway ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+        <div className={`grid grid-cols-2 gap-3 ${usesRedemption || giveaway || offerPage.success ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
           <Stat label="People reached" value={funnel.people} sub={`${shared ? "different phones" : "different cards"} · ${funnel.taps} scan${funnel.taps === 1 ? "" : "s"} incl. repeats`} />
           <Stat label="Added to Wallet" value={funnel.passesAdded} sub={`${conv.tapToPass}% of people`} />
           <Stat label="Tapped a link" value={funnel.clickers} sub={`${conv.tapToClick}% of people · ${funnel.clicks} link tap${funnel.clicks === 1 ? "" : "s"} total`} />
           {usesRedemption && <Stat label="Redeemed" value={funnel.redemptions} sub={`${conv.tapToRedemption}% of people`} />}
+          {(offerPage.success || offer.responses > 0) && (
+            <Stat
+              label="Offer page responses"
+              value={offer.responses}
+              sub={`${offer.answered} answered the question · ${offer.phones} left a number · ${offer.optIns} opted in to texts`}
+            />
+          )}
           {giveaway && (
             <Stat
-              label="Entered the giveaway"
+              label="Texted the keyword"
               value={giveaway.entries}
-              sub={`by text · ${giveaway.answered} answered the question · ${giveaway.fromPass} came from a pass button`}
+              sub={`one per number · ${giveaway.answered} answered the question · ${giveaway.fromPass} came from a pass button`}
             />
           )}
         </div>
@@ -284,6 +299,14 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
           pin: s.pin,
           legacyPin: Boolean(s.pinHash && !s.pin),
         }))}
+      />
+
+      <OfferPageEditor
+        campaignId={id}
+        brand={campaign.brand}
+        initial={offerPage.success ? offerPage.data : null}
+        linked={offerLinked}
+        site={siteUrl()}
       />
 
       {/* 5 · raw feed */}

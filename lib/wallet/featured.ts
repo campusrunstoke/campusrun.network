@@ -32,7 +32,8 @@ export const DEFAULT_TYPE: Partial<Record<LinkAction, string>> = {
 };
 
 /** Front-of-pass priority when more links qualify than Apple allows. */
-export const FEATURED_ORDER: LinkAction[] = ["giveaway", "map", "website", "shop", "video"];
+// The brand's offer (shop) leads: it's what the activation is for.
+export const FEATURED_ORDER: LinkAction[] = ["giveaway", "shop", "map", "website", "video"];
 
 type LinkLike = { action: string; featuredType?: string | null };
 

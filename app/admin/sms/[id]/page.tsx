@@ -11,7 +11,7 @@ import ProgramTools from "./ProgramTools";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Text giveaway · Campus Run" };
+export const metadata: Metadata = { title: "Text offer · Campus Run" };
 
 const pacific = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" });
 const fmt = (d: Date | null) => (d ? pacific.format(d).replace(",", "") : "—");
@@ -52,7 +52,7 @@ export default async function SmsProgramPage({ params }: { params: Promise<{ id:
     <AdminShell name={admin.name} role={admin.role}>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Link href="/admin/sms" className="text-xs font-medium text-muted hover:text-ink">← All text giveaways</Link>
+          <Link href="/admin/sms" className="text-xs font-medium text-muted hover:text-ink">← All text offers</Link>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-[-0.01em] text-ink">{program.name}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
             Keyword <code className="rounded-md bg-white px-1.5 py-0.5 font-mono text-ink">{program.keyword}</code>
@@ -81,7 +81,7 @@ export default async function SmsProgramPage({ params }: { params: Promise<{ id:
         <Status ok={twilioReady} label="Twilio connected" hint={twilioReady ? "Incoming texts are verified and recorded." : "Add TWILIO_AUTH_TOKEN in Vercel once the number is approved."} />
         <Status ok={Boolean(number)} label="Phone number" hint={number ?? "Add TWILIO_PHONE_NUMBER in Vercel (e.g. +18558517300)."} />
         <div className="rounded-2xl border border-line bg-white p-4">
-          <div className="text-sm font-semibold text-ink">Link for the pass&apos;s giveaway button</div>
+          <div className="text-sm font-semibold text-ink">Link for the pass&apos;s offer button</div>
           {passLink ? (
             <code className="mt-1 block break-all font-mono text-[11px] text-ink/80">{passLink}</code>
           ) : (

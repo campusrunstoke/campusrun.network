@@ -44,14 +44,20 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section label="Text message promotions">
+        <Section label="Text message offers">
           <div className="space-y-4 text-[16px] leading-[1.7] text-muted">
             <p>
-              Some activations let you enter a giveaway by texting a keyword to a Campus
-              Run number. By sending that text, you agree to receive replies about that
-              promotion — typically a confirmation, one optional question, and a thank-you
-              (up to 3 messages per entry). We only text people who text us first, and we
-              don&rsquo;t send marketing messages beyond the promotion you entered.
+              Some activations let you get a brand&rsquo;s offer by texting a keyword to a
+              Campus Run number. By sending that text, you agree to receive replies about
+              that offer — the offer itself with one optional question, and a thank-you
+              (up to 2 messages per request). Everyone who texts gets the same offer.
+            </p>
+            <p>
+              On a brand&rsquo;s offer page you can also choose, with an unticked checkbox,
+              to receive that brand&rsquo;s news and offers from Campus Run by text — up to 4
+              messages a month. Opting in is never required to get an offer. We only text
+              people who have opted in one of these two ways. Details:{" "}
+              <a href="/text-offers" className="font-medium text-ink underline">Text for Offers</a>.
             </p>
             <p>
               Message and data rates may apply. Message frequency varies. Reply{" "}
@@ -61,9 +67,7 @@ export default function TermsPage() {
               <a href={`mailto:${EMAIL}`} className="font-medium text-ink underline">
                 {EMAIL}
               </a>
-              . Carriers are not liable for delayed or undelivered messages. Entering
-              never requires a purchase; each giveaway&rsquo;s official rules govern
-              eligibility and winner selection. See our{" "}
+              . Carriers are not liable for delayed or undelivered messages. See our{" "}
               <a href="/privacy" className="font-medium text-ink underline">
                 Privacy Policy
               </a>{" "}

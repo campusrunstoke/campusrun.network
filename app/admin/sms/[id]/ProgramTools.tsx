@@ -95,7 +95,7 @@ export default function ProgramTools({
           </p>
           <button
             onClick={() => {
-              if (open && !window.confirm("Close entries? Anyone who texts the keyword from now on gets the “giveaway ended” reply.")) return;
+              if (open && !window.confirm("Close entries? Anyone who texts the keyword from now on gets the “offer ended” reply.")) return;
               patch({ open: !open }, open ? "Entries closed." : "Entries open.");
             }}
             disabled={busy}

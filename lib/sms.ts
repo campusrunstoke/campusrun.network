@@ -4,16 +4,19 @@
  * a terms link — keep this wording in step with the sample messages we registered.
  */
 export const SMS_DISCLOSURE =
-  "Entering by text: Msg & data rates may apply. Up to 3 msgs per entry. Reply STOP to opt out, HELP for help. Terms & privacy: campusrun.network/terms";
+  "By text: Msg & data rates may apply. Up to 2 msgs per request. Reply STOP to opt out, HELP for help. Terms & privacy: campusrun.network/terms";
 
-/** Starting wording for a new giveaway — drafts, edited per giveaway in the portal. */
+/**
+ * Starting wording for a new text offer — drafts, edited per program in the portal.
+ * Carriers forbid giveaways/contests by text, so never "win", "prize", "enter" or "giveaway".
+ */
 export const DEFAULT_REPLIES = {
   replyEntry:
-    "Campus Run x {BRAND}: You're entered in the giveaway! Quick question: {QUESTION} Msg & data rates may apply. Reply STOP to opt out.",
-  replyAnswer: "Thanks! Good luck in the giveaway. - Campus Run",
-  replyWrongKeyword: "Text {KEYWORD} to enter the {BRAND} giveaway.",
-  replyHelp: "Campus Run: questions about the giveaway? Email kasey@campusrun.network. Reply STOP to opt out.",
-  replyClosed: "This giveaway has ended. Thanks for your interest! - Campus Run",
+    "Campus Run x {BRAND}: here's your {BRAND} offer: [code]. Quick q: {QUESTION} Msg&data rates may apply. Reply STOP to opt out",
+  replyAnswer: "Thanks! That helps a ton. - Campus Run x {BRAND}",
+  replyWrongKeyword: "Text {KEYWORD} to get your {BRAND} offer.",
+  replyHelp: "Campus Run x {BRAND}: questions? Email kasey@campusrun.network. Msg&data rates may apply. Reply STOP to opt out",
+  replyClosed: "This offer has ended. Thanks for checking it out! - Campus Run",
 };
 
 /** Carrier opt-out / opt-in / help words (CTIA). Matched on the whole message. */

@@ -127,6 +127,13 @@
       "when": 1791061450093,
       "tag": "0017_chubby_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791830383513,
+      "tag": "0018_nappy_black_widow",
+      "breakpoints": true
     }
   ]
 }

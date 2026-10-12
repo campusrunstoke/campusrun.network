@@ -312,6 +312,9 @@ export const walletCampaigns = pgTable(
     // poster and banner. The PNG columns above are what it exports — passes are built from
     // those, so a campaign designed by hand (no layers) works exactly the same.
     design: jsonb("design"),
+    // The campaign's own offer page (/offer/{pass}) — e.g. a discount everyone who taps
+    // gets, plus one optional question and an optional phone opt-in. Null = no page.
+    offerPage: jsonb("offer_page"),
     createdBy: uuid("created_by").references(() => admins.id, { onDelete: "set null" }),
   },
   (t) => [index("wallet_campaigns_brand_idx").on(t.brand)],
@@ -595,3 +598,32 @@ export const smsOptOuts = pgTable("sms_opt_outs", {
   phone: text("phone").primaryKey(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Someone who opened a campaign's offer page and answered and/or left their number.
+ * One per pass (so one per phone on shared cards); a later visit updates it.
+ */
+export const offerClaims = pgTable(
+  "offer_claims",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    campaignId: uuid("campaign_id")
+      .notNull()
+      .references(() => walletCampaigns.id, { onDelete: "cascade" }),
+    passSerial: text("pass_serial").notNull(),
+    cardId: text("card_id"),
+    answer: text("answer"),
+    phone: text("phone"), // optional; never shared with the brand
+    // Separate, unticked-by-default consent to future texts — never required for the offer.
+    smsOptIn: boolean("sms_opt_in").notNull().default(false),
+    // Proof of consent: the exact wording they agreed to, and when (TCPA record-keeping).
+    consentText: text("consent_text"),
+    consentedAt: timestamp("consented_at", { withTimezone: true }),
+    userAgent: text("user_agent"),
+  },
+  (t) => [uniqueIndex("offer_claims_campaign_pass_uq").on(t.campaignId, t.passSerial)],
+);
+
+export type OfferClaim = typeof offerClaims.$inferSelect;

@@ -30,7 +30,7 @@ const LINK_LABELS: Record<LinkAction, string> = {
   map: "WHERE TO BUY",
   website: "WEBSITE",
   video: "WATCH",
-  shop: "SHOP",
+  shop: "OFFER",
   giveaway: "GIVEAWAY",
 };
 
@@ -54,9 +54,9 @@ function buildBackFields(
     value: linkUrl(l),
     attributedValue: `<a href="${linkUrl(l)}">${escapeHtml(l.label || LINK_LABELS[l.action])}</a>`,
   }));
-  // The giveaway enters by text, so the pass carries the carrier-required SMS disclosure.
-  if (links.some((l) => l.action === "giveaway")) {
-    rows.push({ key: "sms", label: "TEXT TO ENTER", value: SMS_DISCLOSURE, attributedValue: SMS_DISCLOSURE });
+  // Any link that opens a pre-filled text carries the carrier-required SMS disclosure.
+  if (links.some((l) => l.destination?.toLowerCase().startsWith("sms:"))) {
+    rows.push({ key: "sms", label: "BY TEXT", value: SMS_DISCLOSURE, attributedValue: SMS_DISCLOSURE });
   }
   if (terms) rows.push({ key: "terms", label: "TERMS", value: terms, attributedValue: escapeHtml(terms) });
   // A preview has no real pass behind it, so there is no receipt page to send people to.
@@ -86,8 +86,12 @@ export async function buildPass(
 
   const passTypeIdentifier = campaign.passTypeIdentifier || walletConfig.passTypeIdentifier!;
   const base = siteUrl();
+  // "{pass}" in a destination is this pass's serial (our own pages, e.g. /offer/{pass});
+  // a preview pass has no real serial, so it gets the page's preview mode instead.
   const linkUrl = (l: FeaturedLink) =>
-    (preview || l.featuredDirect) && l.destination ? l.destination : `${base}/r/${pass.serial}/${l.action}`;
+    (preview || l.featuredDirect) && l.destination
+      ? l.destination.replaceAll("{pass}", preview ? `preview?campaign=${campaign.id}` : pass.serial)
+      : `${base}/r/${pass.serial}/${l.action}`;
 
   // Per-campaign artwork falls back to the Campus Run placeholders, so a campaign with
   // no design set still produces a valid, installable pass.

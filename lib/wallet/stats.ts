@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { passes, smsEntries, smsPrograms, walletCampaigns, walletCards, walletEvents } from "@/lib/db/schema";
+import { offerClaims, passes, smsEntries, smsPrograms, walletCampaigns, walletCards, walletEvents } from "@/lib/db/schema";
 
 /**
  * Every dashboard number (§6), computed straight off wallet_events so the dashboard
@@ -220,4 +220,18 @@ export async function giveawayStats(campaignId: string) {
     .leftJoin(smsEntries, eq(smsEntries.programId, smsPrograms.id))
     .where(eq(smsPrograms.walletCampaignId, campaignId));
   return row.programs > 0 ? row : null;
+}
+
+/** Offer page results: who answered the question, left a number, and opted in to texts. */
+export async function offerStats(campaignId: string) {
+  const [row] = await db
+    .select({
+      responses: sql<number>`count(*)::int`,
+      answered: sql<number>`count(answer)::int`,
+      phones: sql<number>`count(phone)::int`,
+      optIns: sql<number>`count(*) filter (where sms_opt_in)::int`,
+    })
+    .from(offerClaims)
+    .where(eq(offerClaims.campaignId, campaignId));
+  return row;
 }

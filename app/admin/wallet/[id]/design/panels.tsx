@@ -427,7 +427,7 @@ export function LinksPanel({ links, onChange }: { links: LinkRow[]; onChange: (l
           </div>
         )}
         {links.length > 2 && front.length === 2 && (
-          <p className="text-[11px] text-muted">Apple allows two front buttons. Priority when more qualify: giveaway → map → website → shop → video.</p>
+          <p className="text-[11px] text-muted">Apple allows two front buttons. Priority when more qualify: giveaway → offer (shop) → map → website → video.</p>
         )}
       </div>
     </Panel>

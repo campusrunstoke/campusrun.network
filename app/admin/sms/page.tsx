@@ -9,7 +9,7 @@ import NewSmsProgramForm from "./NewSmsProgramForm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Text giveaways · Campus Run" };
+export const metadata: Metadata = { title: "Texting · Campus Run" };
 
 export default async function SmsPage() {
   const admin = await requireAdmin();
@@ -31,17 +31,18 @@ export default async function SmsPage() {
   return (
     <AdminShell name={admin.name} role={admin.role}>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold tracking-[-0.01em] text-ink">Text giveaways</h1>
+        <h1 className="font-display text-2xl font-bold tracking-[-0.01em] text-ink">Texting</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          A student texts a keyword to our number — that text is their entry. We reply once with a bonus question,
-          and whatever they send back is saved as their answer. One entry per phone number.
+          A student texts a keyword to our number to get a brand&apos;s offer. We reply once with the offer and an
+          optional question; whatever they send back is saved as their answer. One reply per phone number.
+          Carriers don&apos;t allow giveaways or contests by text, so these are offers everyone gets.
         </p>
       </div>
 
       {!twilioReady && (
         <p className="mb-6 rounded-2xl border border-gold bg-gold/10 px-4 py-3 text-xs text-ink">
-          Twilio isn&apos;t connected yet, so real texts can&apos;t arrive. You can still set up giveaways and try them
-          with the text simulator on each giveaway&apos;s page.
+          Twilio isn&apos;t connected yet, so real texts can&apos;t arrive. You can still set up text offers and try them
+          with the text simulator on each one&apos;s page.
         </p>
       )}
 
@@ -49,16 +50,16 @@ export default async function SmsPage() {
 
       {programs.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line bg-white py-16 text-center text-sm text-muted">
-          No text giveaways yet.
+          No text offers yet.
         </div>
       ) : (
         <section className="overflow-x-auto rounded-2xl border border-line bg-white">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs font-semibold text-muted">
-                <th className="px-4 py-3">Giveaway</th>
+                <th className="px-4 py-3">Program</th>
                 <th className="px-4 py-3">Keyword</th>
-                <th className="px-4 py-3 text-right">Entries</th>
+                <th className="px-4 py-3 text-right">Texted in</th>
                 <th className="px-4 py-3 text-right">Answered</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -71,7 +72,7 @@ export default async function SmsPage() {
                     <td className="px-4 py-3">
                       <Link href={`/admin/sms/${p.id}`} className="font-semibold text-ink">{p.name}</Link>
                       <span className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${p.open ? "bg-emerald-50 text-emerald-700" : "bg-line text-muted"}`}>
-                        {p.open ? "Open" : "Closed"}
+                        {p.open ? "Open" : "Ended"}
                       </span>
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-ink">{p.keyword}</td>

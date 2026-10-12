@@ -38,7 +38,8 @@ export async function GET(req: NextRequest, ctx: { params: Params }) {
 
   // A text-to-enter link carries this pass's entry code ("POCARI #7A2F9C"), so the entry
   // that comes back by text is tied to this exact pass, card and campaign.
-  const destination = link?.destination ? withEntryCode(link.destination, serial) : fallback;
+  // "{pass}" marks our own per-pass pages (e.g. /offer/{pass}): fill in this pass.
+  const destination = link?.destination ? withEntryCode(link.destination.replaceAll("{pass}", serial), serial) : fallback;
   const userAgent = req.headers.get("user-agent");
 
   after(() =>

@@ -15,6 +15,7 @@ import {
   tapsByHour,
   cardLeaderboard,
   giveawayStats,
+  offerStats,
 } from "@/lib/wallet/stats";
 import PrintButton from "./PrintButton";
 
@@ -32,7 +33,7 @@ export const metadata: Metadata = { title: "Brand report · Campus Run" };
 async function loadReport(id: string) {
   const today = new Date();
   const weekAgo = new Date(today.getTime() - 7 * 24 * 3600 * 1000);
-  const [week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway] = await Promise.all([
+  const [week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway, offer] = await Promise.all([
     campaignFunnel(id, weekAgo),
     campaignFunnel(id),
     clicksByAction(id),
@@ -44,8 +45,9 @@ async function loadReport(id: string) {
     db.select().from(walletLinks).where(eq(walletLinks.campaignId, id)),
     cardLeaderboard(id),
     giveawayStats(id),
+    offerStats(id),
   ]);
-  return { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway };
+  return { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway, offer };
 }
 
 const n = (v: number, one: string, many = one + "s") => `${v.toLocaleString()} ${v === 1 ? one : many}`;
@@ -61,7 +63,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const [campaign] = await db.select().from(walletCampaigns).where(eq(walletCampaigns.id, id)).limit(1);
   if (!campaign) notFound();
 
-  const { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway } = await loadReport(id);
+  const { today, week, total, clicks, storesWeek, storesTotal, devices, installs, hours, links, cards, giveaway, offer } = await loadReport(id);
   const shared = campaign.cardMode === "shared";
   const ct = conversions(total);
   const taps = devices.reduce((s, d) => s + d.count, 0);
@@ -100,7 +102,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           {usesRedemption ? (
             <Big label="Redeemed" value={total.redemptions} sub={`${ct.tapToRedemption}% of people`} gold />
           ) : giveaway ? (
-            <Big label="Entered the giveaway" value={giveaway.entries} sub="by text, one per phone number" gold />
+            <Big label="Texted the keyword" value={giveaway.entries} sub="one per phone number" gold />
+          ) : offer.responses > 0 ? (
+            <Big label="Answered the question" value={offer.answered} sub={`${offer.optIns} opted in to texts`} gold />
           ) : (
             <Big label="Still in Wallet" value={installs.installed} sub="passes kept after the event" />
           )}
@@ -124,11 +128,27 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <Row multiWeek={multiWeek} label="Tapped a link on the pass" week={week.clickers} total={total.clickers} note={`${ct.tapToClick}%`} />
               {giveaway && (
                 <tr className="border-t border-line">
-                  <td className="py-2.5 font-medium">Entered the giveaway by text</td>
+                  <td className="py-2.5 font-medium">Texted the keyword</td>
                   {multiWeek && <td className="py-2.5 text-right">—</td>}
                   <td className="py-2.5 text-right font-display text-lg font-bold">{giveaway.entries.toLocaleString()}</td>
                   <td className="py-2.5 text-right text-xs text-muted">{n(giveaway.answered, "answered the question", "answered the question")}</td>
                 </tr>
+              )}
+              {offer.responses > 0 && (
+                <>
+                  <tr className="border-t border-line">
+                    <td className="py-2.5 font-medium">Answered the question on the offer page</td>
+                    {multiWeek && <td className="py-2.5 text-right">—</td>}
+                    <td className="py-2.5 text-right font-display text-lg font-bold">{offer.answered.toLocaleString()}</td>
+                    <td className="py-2.5 text-right text-xs text-muted">{total.people ? `${Math.round((offer.answered / total.people) * 100)}%` : "—"}</td>
+                  </tr>
+                  <tr className="border-t border-line">
+                    <td className="py-2.5 font-medium">Opted in to {campaign.brand} texts</td>
+                    {multiWeek && <td className="py-2.5 text-right">—</td>}
+                    <td className="py-2.5 text-right font-display text-lg font-bold">{offer.optIns.toLocaleString()}</td>
+                    <td className="py-2.5 text-right text-xs text-muted">{total.people ? `${Math.round((offer.optIns / total.people) * 100)}%` : "—"}</td>
+                  </tr>
+                </>
               )}
               {usesRedemption && (
                 <Row multiWeek={multiWeek} label="Redeemed in store" week={week.redemptions} total={total.redemptions} note={`${ct.tapToRedemption}%`} />
