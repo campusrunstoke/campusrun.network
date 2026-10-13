@@ -259,4 +259,9 @@ export const smsProgramSchema = z.object({
   replyClosed: reply,
 });
 
-export const smsProgramPatchSchema = smsProgramSchema.partial().extend({ open: z.boolean().optional() });
+export const smsProgramPatchSchema = smsProgramSchema.partial().extend({
+  open: z.boolean().optional(),
+  // The conversation: each text sent after any reply to the one before. Empty = none.
+  steps: z.array(z.string().trim().max(640)).max(6).nullable().optional(),
+  liveSending: z.boolean().optional(),
+});

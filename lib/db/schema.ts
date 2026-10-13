@@ -547,6 +547,12 @@ export const smsPrograms = pgTable(
     replyWrongKeyword: text("reply_wrong_keyword").notNull(), // first text that isn't the keyword
     replyHelp: text("reply_help").notNull(), // HELP / INFO
     replyClosed: text("reply_closed").notNull(), // keyword after entries close
+    // A conversation: texts sent one at a time, each after any reply to the one before
+    // (STOP aside). Set → replaces replyEntry/replyAnswer. Each step sends once per number.
+    steps: jsonb("steps").$type<string[]>(),
+    // Off until the number is verified: no outbound first texts are sent while false
+    // (replies to people who text us still work once Twilio delivers them).
+    liveSending: boolean("live_sending").notNull().default(false),
   },
   (t) => [uniqueIndex("sms_programs_keyword_uq").on(t.keyword)],
 );
@@ -572,6 +578,12 @@ export const smsEntries = pgTable(
     // campaign this entry came from. Null when someone types the keyword themselves.
     passSerial: text("pass_serial"),
     cardId: text("card_id"),
+    // Conversation progress: how many steps have been sent, every reply in order, and
+    // how they joined — "text" (texted the keyword) or "web" (ticked the box on the page;
+    // step 0 = their first text hasn't gone out yet).
+    step: smallint("step").notNull().default(0),
+    answers: jsonb("answers").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    source: text("source").notNull().default("text"),
   },
   (t) => [
     uniqueIndex("sms_entries_program_phone_uq").on(t.programId, t.phone),

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Card = { id: string; url: string; active: boolean; qr: string | null; serial: string | null; redeemed: boolean; scans: number; people: number };
+type Card = { id: string; url: string; active: boolean; qr: string | null; serial: string | null; redeemed: boolean; scans: number; people: number; textLink?: boolean };
 type LinkRow = { action: string; label: string | null; destination: string; appleButton: string | null };
 type Store = { id: string; name: string; pin: string | null; legacyPin: boolean };
 
@@ -72,7 +72,8 @@ export default function CampaignTools({
 
   // The file whoever encodes the NFC chips works from: one row per card.
   function downloadCsv() {
-    const csv = ["card_id,url", ...cards.map((c) => `${c.id},${c.url}`)].join("\n");
+    // Text links (sent in a text message) are never printed on a card.
+    const csv = ["card_id,url", ...cards.filter((c) => !c.textLink).map((c) => `${c.id},${c.url}`)].join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     a.download = `${mintPrefix || "cards"}-card-links.csv`;
@@ -145,10 +146,10 @@ export default function CampaignTools({
               disabled={cards.length === 0}
               className="h-10 w-full rounded-full bg-ink text-sm font-semibold text-white hover:bg-ink-deep disabled:opacity-40"
             >
-              ↓ Download {cards.length.toLocaleString()} card link{cards.length === 1 ? "" : "s"} (CSV)
+              ↓ Download {cards.filter((c) => !c.textLink).length.toLocaleString()} card link{cards.filter((c) => !c.textLink).length === 1 ? "" : "s"} (CSV)
             </button>
             <button
-              onClick={() => copy(cards.map((c) => `${c.id},${c.url}`).join("\n"), "all")}
+              onClick={() => copy(cards.filter((c) => !c.textLink).map((c) => `${c.id},${c.url}`).join("\n"), "all")}
               disabled={cards.length === 0}
               className="mt-2 w-full text-xs font-medium text-muted hover:text-ink disabled:opacity-40"
             >
@@ -179,6 +180,7 @@ export default function CampaignTools({
               {shownCards.map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center gap-2 py-2">
                   <code className="w-full truncate font-mono text-xs text-ink sm:w-40 sm:shrink-0">{c.id}</code>
+                  {c.textLink && <span className="shrink-0 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700">text link · don&apos;t encode</span>}
                   <code className="hidden min-w-0 flex-1 truncate font-mono text-[11px] text-muted sm:block">{c.url}</code>
                   {c.scans > 0 ? (
                     <span className="hidden shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 sm:inline">

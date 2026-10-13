@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
+import { enrollWebOptIn } from "@/lib/sms-send";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -58,5 +59,16 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ serial: st
         updatedAt: new Date(),
       },
     });
+  // Opted in → join this campaign's text conversation (and get the first text right
+  // away if it's live and daytime). After the response, so the page never waits on Twilio.
+  if (consentText && phone) {
+    after(async () => {
+      try {
+        await enrollWebOptIn(pass.campaignId, phone, serial, pass.cardId);
+      } catch (err) {
+        console.error("[sms] web opt-in enroll failed:", err);
+      }
+    });
+  }
   return NextResponse.json({ ok: true });
 }

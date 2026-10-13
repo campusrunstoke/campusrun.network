@@ -92,8 +92,8 @@ export default function PrivacyPage() {
 
         <Section label="Text messages (SMS)">
           <p className="mb-4 text-[16px] leading-[1.7] text-muted">
-            If you text a keyword to a Campus Run number to get an offer, or opt in to a
-            brand&rsquo;s texts on an offer page, we use your phone number and your replies
+            If you opt in to a brand&rsquo;s texts — on the brand&rsquo;s page, or by texting
+            its keyword to a Campus Run number — we use your phone number and your replies
             only to send what you asked for and to reply to you — and we keep a record of
             when and how you opted in.
           </p>

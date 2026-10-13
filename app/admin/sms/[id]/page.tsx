@@ -8,6 +8,9 @@ import { requireAdmin } from "@/lib/auth/session";
 import { siteUrl } from "@/lib/campaigns";
 import AdminShell from "../../AdminShell";
 import ProgramTools from "./ProgramTools";
+import ConversationPanel from "./ConversationPanel";
+import { programSteps } from "@/lib/sms-inbound";
+import { twilioSendingConfigured } from "@/lib/sms-send";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,6 +47,11 @@ export default async function SmsProgramPage({ params }: { params: Promise<{ id:
     .where(and(eq(smsMessages.programId, id), eq(smsMessages.direction, "out")));
 
   const number = process.env.TWILIO_PHONE_NUMBER ?? null;
+  const steps = programSteps(program);
+  const [waitingRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(smsEntries)
+    .where(and(eq(smsEntries.programId, id), eq(smsEntries.step, 0)));
   const twilioReady = Boolean(process.env.TWILIO_AUTH_TOKEN);
   const passLink = number ? `sms:${number}&body=${encodeURIComponent(program.keyword)}` : null;
   const answerRate = stats.entries ? Math.round((stats.answered / stats.entries) * 100) : 0;
@@ -99,7 +107,17 @@ export default async function SmsProgramPage({ params }: { params: Promise<{ id:
         <Stat label="Entries this page shows" value={Math.min(entries.length, 200)} sub="newest 200 · full list in the CSVs" />
       </section>
 
+      <ConversationPanel
+        id={id}
+        initialSteps={steps ?? []}
+        liveSending={program.liveSending}
+        waiting={waitingRow.n}
+        sendingReady={twilioSendingConfigured()}
+        linkedCampaign={Boolean(program.walletCampaignId)}
+      />
+
       <ProgramTools
+        hasSteps={Boolean(steps)}
         id={id}
         open={program.open}
         keyword={program.keyword}
@@ -124,7 +142,7 @@ export default async function SmsProgramPage({ params }: { params: Promise<{ id:
                 <tr className="text-left text-muted">
                   <th className="py-1.5 font-semibold">Entered</th>
                   <th className="py-1.5 font-semibold">Phone</th>
-                  <th className="py-1.5 font-semibold">Answer</th>
+                  <th className="py-1.5 font-semibold">{steps ? "Progress · replies" : "Answer"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,7 +150,18 @@ export default async function SmsProgramPage({ params }: { params: Promise<{ id:
                   <tr key={e.id} className="border-t border-line align-top">
                     <td className="whitespace-nowrap py-2 pr-3 font-mono text-muted">{fmt(e.enteredAt)}</td>
                     <td className="whitespace-nowrap py-2 pr-3 font-mono text-ink">{mask(e.phone)}</td>
-                    <td className="py-2 text-ink">{e.answer ?? <span className="text-muted">—</span>}</td>
+                    <td className="py-2 text-ink">
+                      {steps ? (
+                        <>
+                          <span className="mr-1.5 rounded-full bg-fill px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+                            {e.step === 0 ? "waiting" : `text ${e.step} of ${steps.length}`} · {e.source === "web" ? "web" : "texted in"}
+                          </span>
+                          {(e.answers ?? []).length ? (e.answers ?? []).join(" → ") : <span className="text-muted">—</span>}
+                        </>
+                      ) : (
+                        e.answer ?? <span className="text-muted">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

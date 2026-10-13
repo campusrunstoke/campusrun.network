@@ -4,7 +4,7 @@
  * a terms link — keep this wording in step with the sample messages we registered.
  */
 export const SMS_DISCLOSURE =
-  "By text: Msg & data rates may apply. Up to 2 msgs per request. Reply STOP to opt out, HELP for help. Terms & privacy: campusrun.network/terms";
+  "By text: up to 3 msgs, then up to 4/month. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms & privacy: campusrun.network/terms";
 
 /**
  * Starting wording for a new text offer — drafts, edited per program in the portal.

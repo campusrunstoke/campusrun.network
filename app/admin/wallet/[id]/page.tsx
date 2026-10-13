@@ -104,6 +104,8 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
       qr: qrByCard.get(c.id) ?? null,
       serial: pass?.serial ?? null,
       redeemed: Boolean(pass?.redeemedAt),
+      // A link sent by text (e.g. Text 3's "add the pass"), not a physical card.
+      textLink: c.batchLabel === "text-link",
     };
   });
   const totalTaps = devices.reduce((s, d) => s + d.count, 0);

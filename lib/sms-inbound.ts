@@ -84,17 +84,51 @@ export async function handleInbound(phone: string, rawBody: string, sid: string 
     }
     // The unique (program, phone) index makes this the one-entry-per-person rule, race-proof.
     const from = await attribute(body, program);
+    const steps = programSteps(program);
     const inserted = await db
       .insert(smsEntries)
-      .values({ programId: program.id, phone, ...from })
+      .values({ programId: program.id, phone, ...from, step: steps ? 1 : 0, source: "text" })
       .onConflictDoNothing()
       .returning({ id: smsEntries.id });
-    if (inserted.length === 0) return { reply: null, kind: "duplicate_entry", programId: program.id };
-    return send(phone, program, program.replyEntry, "entry");
+    if (inserted.length === 0) {
+      // Signed up on the web page but their first text hasn't gone out yet: start now.
+      if (steps) {
+        const started = await db
+          .update(smsEntries)
+          .set({ step: 1 })
+          .where(and(eq(smsEntries.programId, program.id), eq(smsEntries.phone, phone), eq(smsEntries.step, 0)))
+          .returning({ id: smsEntries.id });
+        if (started.length) return send(phone, program, steps[0], "step_1");
+      }
+      return { reply: null, kind: "duplicate_entry", programId: program.id };
+    }
+    return steps ? send(phone, program, steps[0], "step_1") : send(phone, program, program.replyEntry, "entry");
   }
 
   const since = new Date(Date.now() - ANSWER_WINDOW_DAYS * 86400_000);
-  if (lastEntry && lastProgram && !lastEntry.answer && lastEntry.enteredAt >= since) {
+  const convo = lastProgram ? programSteps(lastProgram) : null;
+  if (lastEntry && lastProgram && convo && lastEntry.enteredAt >= since) {
+    const reply = body.trim().slice(0, 500);
+    const at = lastEntry.step;
+    // Any reply advances to the next text; each text goes out once (the step check in the
+    // WHERE makes two quick replies advance it only once). After the last text: just log.
+    // (Step 0 = signed up on the web, first text not sent yet: their text starts it.)
+    const next = at < convo.length ? convo[at] : null;
+    const updated = await db
+      .update(smsEntries)
+      .set({
+        answers: sql`${smsEntries.answers} || ${JSON.stringify([reply])}::jsonb`,
+        answer: lastEntry.answer ?? reply,
+        answeredAt: lastEntry.answeredAt ?? new Date(),
+        ...(next ? { step: at + 1 } : {}),
+      })
+      .where(and(eq(smsEntries.id, lastEntry.id), eq(smsEntries.step, at)))
+      .returning({ id: smsEntries.id });
+    if (!updated.length || !next) return { reply: null, kind: next ? "ignored" : "conversation_done", programId: lastProgram.id };
+    return send(phone, lastProgram, next, `step_${at + 1}`);
+  }
+
+  if (lastEntry && lastProgram && !convo && !lastEntry.answer && lastEntry.enteredAt >= since) {
     const updated = await db
       .update(smsEntries)
       .set({ answer: body.trim().slice(0, 500), answeredAt: new Date() })
@@ -172,4 +206,10 @@ async function send(phone: string, program: SmsProgram | null, text: string | nu
 export function twiml(reply: string | null) {
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return `<?xml version="1.0" encoding="UTF-8"?><Response>${reply ? `<Message>${esc(reply)}</Message>` : ""}</Response>`;
+}
+
+/** A program's conversation, when it has one (blank steps dropped). */
+export function programSteps(p: Pick<SmsProgram, "steps">): string[] | null {
+  const steps = (p.steps ?? []).map((x) => x.trim()).filter(Boolean);
+  return steps.length ? steps : null;
 }

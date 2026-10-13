@@ -59,7 +59,8 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   if (d.mintCards) {
     const [{ existing }] = await db
-      .select({ existing: sql<number>`count(*)::int` })
+      // Text links (sent by message, never printed) don't take a card number.
+      .select({ existing: sql<number>`count(*) filter (where ${walletCards.batchLabel} is distinct from 'text-link')::int` })
       .from(walletCards)
       .where(eq(walletCards.campaignId, id));
     const ids = mintCardIds(d.mintCards.prefix, d.mintCards.count, existing);

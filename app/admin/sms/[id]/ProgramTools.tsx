@@ -17,7 +17,7 @@ const REPLY_META: { key: keyof Replies; title: string; when: string }[] = [
   { key: "replyAnswer", title: "Thanks for answering", when: "Sent once, after their first reply. Then we go quiet." },
   { key: "replyWrongKeyword", title: "Wrong word", when: "Someone new texts anything other than the keyword. At most once a day per number." },
   { key: "replyHelp", title: "HELP reply", when: "Carriers require an answer to HELP. Point to an inbox someone reads." },
-  { key: "replyClosed", title: "Giveaway ended", when: "Keyword texted after you close entries. Once per number." },
+  { key: "replyClosed", title: "Program ended", when: "Keyword texted after you close it. Once per number." },
 ];
 
 export default function ProgramTools({
@@ -26,7 +26,9 @@ export default function ProgramTools({
   keyword,
   question,
   replies: initial,
+  hasSteps = false,
 }: {
+  hasSteps?: boolean;
   id: string;
   open: boolean;
   keyword: string;
@@ -91,7 +93,7 @@ export default function ProgramTools({
         <section className="rounded-2xl border border-line bg-white p-4">
           <h2 className="text-sm font-semibold text-ink">Entries</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted">
-            {open ? "Open — texting the keyword enters people." : "Closed — the keyword gets the “ended” reply; no new entries."}
+            {open ? "Open — the keyword (and the page's opt-in) start conversations." : "Closed — the keyword gets the “ended” reply; nobody new is texted."}
           </p>
           <button
             onClick={() => {
@@ -101,11 +103,12 @@ export default function ProgramTools({
             disabled={busy}
             className={`mt-3 h-9 w-full rounded-full text-sm font-semibold disabled:opacity-50 ${open ? "border border-line text-ink hover:border-ink/30" : "bg-ink text-white hover:bg-ink-deep"}`}
           >
-            {open ? "Close entries" : "Open entries"}
+            {open ? "Close" : "Reopen"}
           </button>
         </section>
 
-        <section className="rounded-2xl border border-line bg-white p-4 lg:col-span-2">
+        {/* Winner draws are for giveaways — carriers don't allow those by text, so conversations hide it. */}
+        <section className={`rounded-2xl border border-line bg-white p-4 lg:col-span-2 ${hasSteps ? "hidden" : ""}`}>
           <h2 className="text-sm font-semibold text-ink">Pick a winner</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted">A fair random draw across every entry. Answering the question doesn&apos;t change anyone&apos;s odds.</p>
           <button onClick={draw} className="mt-3 h-9 rounded-full bg-gold px-4 text-sm font-bold text-ink-deep hover:bg-gold-deep">Draw a winner</button>
@@ -141,7 +144,8 @@ export default function ProgramTools({
           <input value={q} onChange={(e) => setQ(e.target.value)} className={input} />
         </label>
         <div className="grid gap-4 lg:grid-cols-2">
-          {REPLY_META.map(({ key, title, when }) => {
+          {/* With a conversation set, its texts replace the single entry/thank-you replies. */}
+          {REPLY_META.filter((r) => !hasSteps || (r.key !== "replyEntry" && r.key !== "replyAnswer")).map(({ key, title, when }) => {
             const s = smsSegments(replies[key]);
             return (
               <label key={key} className="block">

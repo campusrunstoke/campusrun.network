@@ -44,20 +44,20 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section label="Text message offers">
+        <Section label="Text messages">
           <div className="space-y-4 text-[16px] leading-[1.7] text-muted">
             <p>
-              Some activations let you get a brand&rsquo;s offer by texting a keyword to a
-              Campus Run number. By sending that text, you agree to receive replies about
-              that offer — the offer itself with one optional question, and a thank-you
-              (up to 2 messages per request). Everyone who texts gets the same offer.
+              At some activations you can opt in to a brand&rsquo;s texts from Campus Run —
+              by ticking an unticked box on the brand&rsquo;s page, or by texting the
+              brand&rsquo;s keyword to a Campus Run number. We only text people who have
+              opted in one of these two ways, and opting in is never required for anything
+              else. There are no prizes, contests or purchases.
             </p>
             <p>
-              On a brand&rsquo;s offer page you can also choose, with an unticked checkbox,
-              to receive that brand&rsquo;s news and offers from Campus Run by text — up to 4
-              messages a month. Opting in is never required to get an offer. We only text
-              people who have opted in one of these two ways. Details:{" "}
-              <a href="/text-offers" className="font-medium text-ink underline">Text for Offers</a>.
+              After you opt in, you&rsquo;ll get a short conversation of up to 3 messages
+              (each after you reply), then occasional news and updates about that brand —
+              up to 4 messages a month. Details:{" "}
+              <a href="/text-offers" className="font-medium text-ink underline">Campus Run Texts</a>.
             </p>
             <p>
               Message and data rates may apply. Message frequency varies. Reply{" "}

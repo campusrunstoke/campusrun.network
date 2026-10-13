@@ -6,8 +6,8 @@ import { PageHeader, Section, BulletList, SiteFooter } from "../SiteChrome";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Text for Offers · Campus Run",
-  description: "How Campus Run's text offers work: how you opt in, what we send, and how to stop.",
+  title: "Campus Run Texts · Campus Run",
+  description: "How Campus Run's brand texts work: how you opt in, what we send, and how to stop.",
   robots: { index: true, follow: true },
 };
 
@@ -33,31 +33,30 @@ export default async function TextOffersPage() {
     .orderBy(desc(smsPrograms.createdAt))
     .catch(() => []);
   const number = pretty(process.env.TWILIO_PHONE_NUMBER);
-  const example = programs[0]?.keyword ?? "POCARI";
 
   return (
     <div>
-      <PageHeader eyebrow="Text programs" title="Text for Offers">
+      <PageHeader eyebrow="Text programs" title="Campus Run Texts">
         <p className="text-[16px] leading-[1.6] text-white/80">
-          How Campus Run&rsquo;s text offers work at campus brand activations.
+          How Campus Run&rsquo;s brand texts work at campus activations.
         </p>
       </PageHeader>
 
       <main className="mx-auto w-full max-w-[760px] px-6 py-16 sm:px-8 sm:py-20">
         <Section label="How you opt in">
           <p className="mb-6 text-[16px] leading-[1.7] text-muted">
-            At an activation, you scan a card and add the brand&rsquo;s pass to your phone. To get its offer by text,
-            you tap the pass&rsquo;s offer button: your texting app opens with the keyword already typed, addressed to
-            our number{number ? ` (${number})` : ""}. <span className="font-semibold text-ink">Nothing is sent until you
-            press send yourself</span> — that text is your request and your opt-in, and everyone who texts gets the same
-            offer. You can also opt in to a brand&rsquo;s texts with an unticked checkbox on its offer page; it&rsquo;s never
-            required to get the offer. We never text anyone who hasn&rsquo;t opted in one of these two ways.
+            At an activation, you scan a card and add the brand&rsquo;s pass to your phone. The pass has a button that
+            opens the brand&rsquo;s page, where you can enter your phone number and{" "}
+            <span className="font-semibold text-ink">tick an unticked box</span> to get that brand&rsquo;s texts from
+            Campus Run{number ? ` (from ${number})` : ""}. You can also opt in by texting the brand&rsquo;s keyword to that
+            number yourself. <span className="font-semibold text-ink">We never text anyone who hasn&rsquo;t opted in one of
+            these two ways</span>, there are no prizes or contests, and opting in is never required for anything else.
           </p>
 
           {/* Opt-in proof: the three screens, with the disclosure shown beside the button. */}
           <figure id="opt-in" className="rounded-3xl border border-line bg-fill p-5 sm:p-6">
             <div className="grid gap-4 sm:grid-cols-3">
-              <Phone step="1" caption="Tap the offer button on the pass">
+              <Phone step="1" caption="Tap the button on the brand's pass">
                 <div className="rounded-xl bg-[#0054ac] p-3 text-white">
                   <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">Pocari Sweat</div>
                   <div className="mt-1 text-[17px] font-bold leading-tight">STAY COOL.</div>
@@ -65,32 +64,32 @@ export default async function TextOffersPage() {
                 <div className="mt-2 rounded-lg bg-white px-2.5 py-2 text-[11px] font-medium text-black shadow-sm">
                   View Offers and Rewards ›
                 </div>
-                <p className="mt-2 text-[9.5px] leading-snug text-muted">
-                  By text: Msg &amp; data rates may apply. Up to 2 msgs per request. Reply STOP to opt out, HELP for
-                  help. Terms &amp; privacy: campusrun.network/terms
-                </p>
               </Phone>
-              <Phone step="2" caption="Your texting app opens — you press send">
-                <div className="text-center text-[10px] text-muted">To: {number ?? "Campus Run"}</div>
-                <div className="mt-16 flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1.5">
-                  <span className="flex-1 text-[12px] text-black">{example} #7A2F9C</span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0a84ff] text-[11px] text-white">↑</span>
+              <Phone step="2" caption="Enter your number and tick the box">
+                <div className="text-[13px] font-bold leading-tight text-ink">Stay cool with Pocari</div>
+                <div className="mt-2 rounded-lg border border-line bg-white px-2 py-1.5 text-[11px] text-black">(310) 555-0123</div>
+                <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-white p-1.5">
+                  <span className="mt-0.5 flex h-3 w-3 shrink-0 items-center justify-center rounded-sm bg-ink text-[8px] text-white">✓</span>
+                  <span className="text-[8.5px] leading-snug text-muted">
+                    Text me Pocari Sweat news and updates from Campus Run. Up to 4 msgs/month. Msg &amp; data rates may
+                    apply. Reply STOP to opt out, HELP for help.
+                  </span>
                 </div>
+                <div className="mt-2 rounded-lg bg-[#0054ac] py-1.5 text-center text-[11px] font-bold text-white">Keep me posted</div>
+                <p className="mt-1 text-center text-[8.5px] text-muted">The box starts unticked</p>
               </Phone>
-              <Phone step="3" caption="We text back your offer">
-                <div className="flex justify-end">
-                  <span className="rounded-2xl bg-[#0a84ff] px-2.5 py-1.5 text-[11px] text-white">{example} #7A2F9C</span>
-                </div>
+              <Phone step="3" caption="We text you — 3 messages">
+                <div className="text-center text-[10px] text-muted">From: {number ?? "Campus Run"}</div>
                 <div className="mt-2 flex">
                   <span className="rounded-2xl bg-white px-2.5 py-1.5 text-[11px] leading-snug text-black">
-                    Campus Run x Pocari Sweat: here&rsquo;s your Pocari Sweat discount: [code]. quick q: ever heard of
-                    pocari sweat? text back anything. Msg&amp;data rates may apply. Reply STOP to opt out
+                    Yooo it&apos;s Kasey from Campus Run x Pocari Sweat! have you heard of Pocari before? (3 msgs. Msg&amp;data
+                    rates may apply. Reply STOP to opt out, HELP for help)
                   </span>
                 </div>
               </Phone>
             </div>
             <figcaption className="mt-4 text-center text-[12px] text-muted">
-              Opt-in flow for Campus Run text offers · campusrun.network/text-offers
+              Opt-in flow for Campus Run texts · campusrun.network/text-offers
             </figcaption>
           </figure>
         </Section>
@@ -98,9 +97,9 @@ export default async function TextOffersPage() {
         <Section label="What we send">
           <BulletList
             items={[
-              "When you text a keyword: the offer, with one optional question, then a thank-you after your first reply. Up to 2 messages per request.",
-              "Everyone who texts gets the same offer. Answering the question is optional and never required.",
-              "Only if you tick the opt-in box on an offer page: that brand's news and offers from Campus Run, up to 4 messages a month.",
+              "First, a short conversation of up to 3 messages: a quick question about the brand, a second one after you reply, and a link to add the brand's pass. Each sends only after you reply.",
+              "Then, only if you opted in, occasional news and updates about that brand from Campus Run — up to 4 messages a month.",
+              "No prizes, contests or purchases. Replying is optional.",
               "Message frequency varies. Message and data rates may apply.",
               "We never share or sell your number — see our privacy policy.",
             ]}
@@ -119,7 +118,7 @@ export default async function TextOffersPage() {
         </Section>
 
         {programs.length > 0 && (
-          <Section label="Offers open now">
+          <Section label="Brands texting now">
             <BulletList
               items={programs.map((p) => (
                 <>
