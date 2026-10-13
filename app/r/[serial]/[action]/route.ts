@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { passes, walletLinks } from "@/lib/db/schema";
 import { logEvent } from "@/lib/wallet/events";
-import { detectDevice } from "@/lib/wallet/ids";
+import { detectDevice, isBot } from "@/lib/wallet/ids";
 import { LINK_ACTIONS, type LinkAction } from "@/lib/wallet/types";
 import { siteUrl } from "@/lib/campaigns";
 import { withEntryCode } from "@/lib/sms";
@@ -42,7 +42,8 @@ export async function GET(req: NextRequest, ctx: { params: Params }) {
   const destination = link?.destination ? withEntryCode(link.destination.replaceAll("{pass}", serial), serial) : fallback;
   const userAgent = req.headers.get("user-agent");
 
-  after(() =>
+  // Link-preview robots still get forwarded (so previews work) but are never counted.
+  if (!isBot(userAgent)) after(() =>
     logEvent({
       type: "click",
       campaignId: pass.campaignId,

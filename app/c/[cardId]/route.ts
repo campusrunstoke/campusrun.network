@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { walletCards, walletCampaigns } from "@/lib/db/schema";
-import { authTokenDerivable, detectDevice } from "@/lib/wallet/ids";
+import { authTokenDerivable, detectDevice, isBot } from "@/lib/wallet/ids";
 import { campaignLinks, getOrCreatePass, getOrCreateSharedPass, logEvent } from "@/lib/wallet/events";
 import { buildPass } from "@/lib/wallet/pass";
 import { walletConfigured } from "@/lib/wallet/config";
@@ -24,6 +24,10 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cardId: str
   const { cardId } = await ctx.params;
   const userAgent = req.headers.get("user-agent");
   const deviceType = detectDevice(userAgent);
+
+  // A link-preview robot (someone pasted the card link into a chat): send it to the
+  // homepage without minting a pass or counting a tap.
+  if (isBot(userAgent)) return NextResponse.redirect(siteUrl(), { status: 307 });
 
   // Resolve the campaign for this card. Unknown/inactive card → log the tap anyway
   // (null campaign) and bounce to the site so a mis-encoded card is never a dead end.

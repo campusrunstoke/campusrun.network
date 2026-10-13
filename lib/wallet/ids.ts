@@ -56,6 +56,16 @@ export function detectDevice(userAgent: string | null | undefined): DeviceType {
 }
 
 /**
+ * Link-preview robots and crawlers. When someone pastes a card or pass link into iMessage,
+ * Instagram, Slack etc., the app's robot fetches it to draw the preview — that's not a
+ * person, so it must never mint a pass or count as a tap or click. (iMessage's robot
+ * calls itself "facebookexternalhit … Twitterbot".)
+ */
+const BOT_UA =
+  /facebookexternalhit|facebot|twitterbot|slackbot|discordbot|whatsapp|telegrambot|linkedinbot|skypeuripreview|pinterest|redditbot|snapchat.*preview|googlebot|bingbot|applebot|yandex|duckduckbot|baiduspider|embedly|iframely|vkshare|bot\b|crawler|spider|headlesschrome|curl\/|wget\/|python-requests|go-http-client|node-fetch|axios\//i;
+export const isBot = (userAgent: string | null | undefined) => !userAgent || BOT_UA.test(userAgent);
+
+/**
  * Signed, expiring link for the designer's "send a test pass to my phone". The phone
  * isn't logged in, so the link itself is the credential: HMAC over campaign + expiry,
  * keyed with the wallet secret. Previews never touch a campaign's numbers.
