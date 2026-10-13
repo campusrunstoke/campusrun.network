@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { walletCards, walletCampaigns } from "@/lib/db/schema";
-import { detectDevice } from "@/lib/wallet/ids";
+import { authTokenDerivable, detectDevice } from "@/lib/wallet/ids";
 import { campaignLinks, getOrCreatePass, getOrCreateSharedPass, logEvent } from "@/lib/wallet/events";
 import { buildPass } from "@/lib/wallet/pass";
 import { walletConfigured } from "@/lib/wallet/config";
@@ -76,6 +76,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ cardId: str
   );
 
   const canServePkpass = deviceType === "ios" && walletConfigured && campaign;
+
+  // Campaigns with the loading page on: show "your pass is loading" first, which then
+  // opens the pass itself (/pass/{serial}). Turning tap_page off restores the direct
+  // download below instantly — no deploy.
+  if (canServePkpass && campaign.tapPage && authTokenDerivable()) {
+    return remember(NextResponse.redirect(`${siteUrl()}/get/${serial}`, { status: 307 }));
+  }
 
   if (canServePkpass) {
     try {

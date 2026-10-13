@@ -134,6 +134,13 @@
       "when": 1791830383513,
       "tag": "0018_nappy_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791857224576,
+      "tag": "0019_omniscient_klaw",
+      "breakpoints": true
     }
   ]
 }

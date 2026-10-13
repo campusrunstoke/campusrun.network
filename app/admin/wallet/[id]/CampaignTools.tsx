@@ -13,6 +13,7 @@ export default function CampaignTools({
   active,
   usesRedemption,
   cardMode,
+  tapPage,
   cards,
   links,
   stores,
@@ -22,6 +23,7 @@ export default function CampaignTools({
   active: boolean;
   usesRedemption: boolean;
   cardMode: "shared" | "personal";
+  tapPage: boolean;
   cards: Card[];
   links: LinkRow[];
   stores: Store[];
@@ -280,6 +282,21 @@ export default function CampaignTools({
             >
               {active ? "Pause campaign" : "Turn campaign on"}
             </button>
+            <div className="mt-4 border-t border-line pt-3">
+              <div className="text-sm font-semibold text-ink">iPhone loading screen</div>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                {tapPage
+                  ? "On — taps show “Your pass is loading…”, then “Added! Open your Wallet app”."
+                  : "Off — taps open Apple's Add to Wallet sheet directly."}
+              </p>
+              <button
+                onClick={() => patch({ tapPage: !tapPage })}
+                disabled={busy}
+                className="mt-2 h-9 w-full rounded-full border border-line text-sm font-semibold text-ink hover:border-ink/30 disabled:opacity-50"
+              >
+                {tapPage ? "Turn off (direct download)" : "Turn on"}
+              </button>
+            </div>
           </div>
 
           {usesRedemption && (

@@ -141,6 +141,12 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
+            href={`/admin/wallet/${id}/people`}
+            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:border-ink/30"
+          >
+            People <span className="ml-1 font-mono text-xs text-muted">{offer.responses}</span>
+          </Link>
+          <Link
             href={`/admin/wallet/${id}/design`}
             className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:border-ink/30"
           >
@@ -286,6 +292,7 @@ export default async function WalletCampaignPage({ params }: { params: Promise<{
         active={campaign.active}
         usesRedemption={usesRedemption}
         cardMode={shared ? "shared" : "personal"}
+        tapPage={campaign.tapPage}
         cards={cardRows.map((c) => ({ ...c, scans: scansByCard.get(c.id)?.scans ?? 0, people: scansByCard.get(c.id)?.people ?? 0 }))}
         links={links.map((l) => ({
           action: l.action,

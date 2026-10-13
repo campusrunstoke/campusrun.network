@@ -1,0 +1,1 @@
+ALTER TABLE "wallet_campaigns" ADD COLUMN "tap_page" boolean DEFAULT false NOT NULL;

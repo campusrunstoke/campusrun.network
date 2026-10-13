@@ -45,6 +45,12 @@ export async function POST(req: NextRequest, ctx: { params: Params }) {
 
   await db.insert(passRegistrations).values({ deviceLibraryId, passSerial: serialNumber, pushToken });
 
+  // Added again after being removed: it's in a Wallet again, so mark it added (the loading
+  // page and "still in Wallet" read this). Not a new person, so no new pass_added event.
+  if (pass.status === "removed") {
+    await db.update(passes).set({ status: "added", removedAt: null }).where(eq(passes.serial, serialNumber));
+  }
+
   // First time this pass is registered anywhere → it was added to a Wallet. Log pass_added once.
   if (pass.status === "created") {
     await db

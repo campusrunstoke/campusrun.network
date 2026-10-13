@@ -268,6 +268,10 @@ export const walletCampaigns = pgTable(
     // its own pass. "personal": one card handed to one person, one pass per card.
     // New campaigns are created shared; existing ones keep their behaviour.
     cardMode: text("card_mode").notNull().default("personal"),
+    // Show a branded "your pass is loading" page on iPhone taps (then "added — open
+    // Wallet"). Off = the tap downloads the pass directly, as before. A per-campaign
+    // switch so it can be turned off instantly, no deploy.
+    tapPage: boolean("tap_page").notNull().default(false),
     // Giveaway campaigns hide the barcode; flip back on to restore the scan-to-redeem flow.
     showBarcode: boolean("show_barcode").notNull().default(true),
     // Kill switch for the giveaway link — hides it from new passes instantly, no redeploy.

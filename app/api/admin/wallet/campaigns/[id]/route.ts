@@ -14,6 +14,8 @@ const patchSchema = z.object({
   active: z.boolean().optional(),
   // shared = a few cards on a table (one pass per phone); personal = one card per person.
   cardMode: z.enum(["shared", "personal"]).optional(),
+  // The iPhone "your pass is loading" page; off = direct pass download.
+  tapPage: z.boolean().optional(),
   // Mint more cards: { mintCards: { prefix, count } }
   mintCards: z
     .object({
@@ -45,6 +47,10 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   if (d.active !== undefined) {
     await db.update(walletCampaigns).set({ active: d.active }).where(eq(walletCampaigns.id, id));
+  }
+
+  if (d.tapPage !== undefined) {
+    await db.update(walletCampaigns).set({ tapPage: d.tapPage }).where(eq(walletCampaigns.id, id));
   }
 
   if (d.cardMode) {
