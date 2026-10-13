@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { passes, walletCampaigns, walletLinks } from "@/lib/db/schema";
 import type { LinkAction } from "@/lib/wallet/types";
 import { SMS_DISCLOSURE } from "@/lib/sms";
+import { FEATURED_ORDER } from "@/lib/wallet/featured";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,10 +39,13 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
     .limit(1);
   if (!campaign) notFound();
 
-  const links = await db
-    .select({ action: walletLinks.action, label: walletLinks.label, destination: walletLinks.destination })
-    .from(walletLinks)
-    .where(eq(walletLinks.campaignId, campaign.id));
+  // Same priority as the pass's front buttons, so the main action leads.
+  const links = (
+    await db
+      .select({ action: walletLinks.action, label: walletLinks.label, destination: walletLinks.destination })
+      .from(walletLinks)
+      .where(eq(walletLinks.campaignId, campaign.id))
+  ).sort((a, b) => FEATURED_ORDER.indexOf(a.action) - FEATURED_ORDER.indexOf(b.action));
 
   // The barcode IS the cashier's redeem link (§5A). The student carries it on their
   // screen; staff scan it with their own phone camera and land on the right coupon.
@@ -144,12 +148,15 @@ export default async function CouponPage({ params }: { params: Promise<{ serial:
         </div>
       )}
 
-      <a
-        href={`/receipt/${serial}`}
-        className="mt-6 text-center text-sm font-medium text-ink underline underline-offset-4"
-      >
-        Already bought it? Tell us where →
-      </a>
+      {/* Purchase tracking belongs to coupon campaigns only. */}
+      {campaign.showBarcode && (
+        <a
+          href={`/receipt/${serial}`}
+          className="mt-6 text-center text-sm font-medium text-ink underline underline-offset-4"
+        >
+          Already bought it? Tell us where →
+        </a>
+      )}
 
       <p className="mt-auto pt-10 text-center text-xs leading-relaxed text-muted">
         Campus Run · one tap, zero friction.

@@ -3,7 +3,7 @@ import { walletConfig, walletConfigured, WalletNotConfiguredError } from "./conf
 import { passAssets } from "./assets";
 import { siteUrl } from "@/lib/campaigns";
 import { SMS_DISCLOSURE } from "@/lib/sms";
-import { featuredLinks } from "./featured";
+import { featuredLinks, FEATURED_ORDER } from "./featured";
 
 // Labels and terms are typed in the designer, and Wallet renders attributedValue as HTML.
 const escapeHtml = (s: string) =>
@@ -47,8 +47,11 @@ function buildBackFields(
   cardId: string,
   linkUrl: (l: FeaturedLink) => string,
   preview: boolean,
+  coupon: boolean,
 ) {
-  const rows = links.map((l) => ({
+  // Same priority as the front buttons, so the main action is first on the back too.
+  const ordered = [...links].sort((a, b) => FEATURED_ORDER.indexOf(a.action) - FEATURED_ORDER.indexOf(b.action));
+  const rows = ordered.map((l) => ({
     key: `link-${l.action}`,
     label: LINK_LABELS[l.action],
     value: linkUrl(l),
@@ -59,8 +62,9 @@ function buildBackFields(
     rows.push({ key: "sms", label: "BY TEXT", value: SMS_DISCLOSURE, attributedValue: SMS_DISCLOSURE });
   }
   if (terms) rows.push({ key: "terms", label: "TERMS", value: terms, attributedValue: escapeHtml(terms) });
-  // A preview has no real pass behind it, so there is no receipt page to send people to.
-  if (!preview) rows.push({
+  // "Bought it? Tell us where" is purchase tracking for coupon campaigns; it's off-topic
+  // elsewhere. A preview has no real pass behind it, so no receipt page either.
+  if (!preview && coupon) rows.push({
     key: "receipt",
     label: "BOUGHT IT?",
     value: `${base}/receipt/${serial}`,
@@ -163,7 +167,7 @@ export async function buildPass(
     value: campaign.secondaryValue || "Tap for the map",
     textAlignment,
   };
-  const backFields = buildBackFields(pass.serial, base, campaign.terms, links, pass.cardId, linkUrl, preview);
+  const backFields = buildBackFields(pass.serial, base, campaign.terms, links, pass.cardId, linkUrl, preview, campaign.showBarcode);
 
   if (isPoster) {
     // posterGeneric (iOS 27) is the full-bleed poster layout built for coupons and
