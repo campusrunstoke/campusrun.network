@@ -21,6 +21,10 @@ export const offerPageSchema = z.object({
   askPhone: z.boolean(), // show the optional phone + texts opt-in
   brandName: text(60).min(1), // used in the consent wording
   terms: optional(500), // fine print under the offer
+  // "brand": the page wears the pass — the campaign's colours, with its poster artwork as
+  // the picture. "plain": Campus Run's white layout.
+  style: z.enum(["plain", "brand"]).default("plain"),
+  buttonLabel: optional(40), // the form's button, e.g. "Keep me posted"
 });
 
 export type OfferPage = z.infer<typeof offerPageSchema>;
@@ -36,15 +40,17 @@ export const defaultOfferPage = (brand: string): OfferPage => ({
   askPhone: true,
   brandName: brand,
   terms: null,
+  style: "brand",
+  buttonLabel: null,
 });
 
 /**
- * The texts consent shown beside the optional phone box. Kept separate from the offer
- * and unticked by default — consent to marketing texts can never be a condition of
- * getting the discount.
+ * The texts consent shown beside the phone box: unticked by default, and — when the page
+ * gives something away — never a condition of getting it. Takes the page so the stored
+ * consent record is always the exact wording that page showed.
  */
-export const smsConsentText = (brand: string) =>
-  `Text me ${brand} news and offers from Campus Run. Up to 4 msgs/month. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Not required to get this offer.`;
+export const smsConsentText = (page: Pick<OfferPage, "brandName" | "code" | "ctaUrl">) =>
+  `Text me ${page.brandName} news and updates from Campus Run. Up to 4 msgs/month. Msg & data rates may apply. Reply STOP to opt out, HELP for help.${page.code || page.ctaUrl ? " Not required to get this offer." : ""}`;
 
 /** US numbers only: "(310) 555-0101", "310.555.0101", "+1 310…" → "+13105550101". */
 export function normalizeUsPhone(raw: string): string | null {

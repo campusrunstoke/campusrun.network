@@ -64,6 +64,13 @@ export default function OfferPageEditor({
               </F>
             </div>
             <F label="Promo code (optional)"><input id="op-code" value={str(page.code)} onChange={(e) => set("code", e.target.value)} className={`${input} font-mono`} /></F>
+            <F label="Look">
+              <select id="op-style" value={page.style} onChange={(e) => set("style", e.target.value as OfferPage["style"])} className={input}>
+                <option value="brand">Brand — the pass&apos;s colours and artwork</option>
+                <option value="plain">Plain — Campus Run white</option>
+              </select>
+            </F>
+            <F label="Form button text"><input id="op-button" value={str(page.buttonLabel)} onChange={(e) => set("buttonLabel", e.target.value)} placeholder="Send" className={input} /></F>
             <F label="Brand name (used in the texts opt-in)"><input id="op-brand" value={page.brandName} onChange={(e) => set("brandName", e.target.value)} className={input} /></F>
             <F label="Button text (optional)"><input id="op-cta-label" value={str(page.ctaLabel)} onChange={(e) => set("ctaLabel", e.target.value)} placeholder="Shop Pocari Sweat" className={input} /></F>
             <F label="Button link (optional)"><input id="op-cta-url" value={str(page.ctaUrl)} onChange={(e) => set("ctaUrl", e.target.value)} placeholder="https://…" className={`${input} font-mono text-xs`} /></F>
@@ -78,7 +85,7 @@ export default function OfferPageEditor({
             <input id="op-askphone" type="checkbox" checked={page.askPhone} onChange={(e) => set("askPhone", e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#003b5c]" />
             <span>
               <span className="block text-sm text-ink">Ask for a phone number (optional for them)</span>
-              <span className="block text-[11px] leading-snug text-muted">Shows an unticked opt-in: “{smsConsentText(page.brandName)}”</span>
+              <span className="block text-[11px] leading-snug text-muted">Shows an unticked opt-in: “{smsConsentText(page)}”</span>
             </span>
           </label>
           <div className="mt-4 flex flex-wrap items-center gap-2">

@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ serial: st
   // server — never taken from the request — plus the time they agreed.
   const [campaign] = await db.select({ offerPage: walletCampaigns.offerPage }).from(walletCampaigns).where(eq(walletCampaigns.id, pass.campaignId)).limit(1);
   const page = offerPageSchema.safeParse(campaign?.offerPage);
-  const consentText = smsOptIn && page.success ? smsConsentText(page.data.brandName) : null;
+  const consentText = smsOptIn && page.success ? smsConsentText(page.data) : null;
   const consentedAt = consentText ? new Date() : null;
 
   const userAgent = req.headers.get("user-agent")?.slice(0, 512) ?? null;
