@@ -92,6 +92,46 @@ export default async function TextOffersPage() {
               Opt-in flow for Campus Run texts · campusrun.network/text-offers
             </figcaption>
           </figure>
+
+          {/* Second opt-in method: texting the keyword from the pass. Nothing sends until they press send. */}
+          <figure id="opt-in-keyword" className="mt-6 rounded-3xl border border-line bg-fill p-5 sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Phone step="1" caption="Tap the text button on the pass">
+                <div className="rounded-xl bg-[#0054ac] p-3 text-white">
+                  <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">Pocari Sweat</div>
+                  <div className="mt-1 text-[17px] font-bold leading-tight">STAY COOL.</div>
+                </div>
+                <div className="mt-2 rounded-lg bg-white px-2.5 py-2 text-[11px] font-medium text-black shadow-sm">
+                  View Offers and Rewards ›
+                </div>
+                <p className="mt-2 text-[9.5px] leading-snug text-muted">
+                  By text: up to 3 msgs, then up to 4/month. Msg &amp; data rates may apply. Reply STOP to opt out, HELP
+                  for help. Terms &amp; privacy: campusrun.network/terms
+                </p>
+              </Phone>
+              <Phone step="2" caption="Messages opens with POCARI typed — you press send">
+                <div className="text-center text-[10px] text-muted">To: {number ?? "Campus Run"}</div>
+                <div className="mt-16 flex items-center gap-1.5 rounded-full border border-line bg-white px-2.5 py-1.5">
+                  <span className="flex-1 text-[12px] text-black">POCARI</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0a84ff] text-[11px] text-white">↑</span>
+                </div>
+              </Phone>
+              <Phone step="3" caption="We text back — 3 messages">
+                <div className="flex justify-end">
+                  <span className="rounded-2xl bg-[#0a84ff] px-2.5 py-1.5 text-[11px] text-white">POCARI</span>
+                </div>
+                <div className="mt-2 flex">
+                  <span className="rounded-2xl bg-white px-2.5 py-1.5 text-[11px] leading-snug text-black">
+                    Yooo it&apos;s Kasey from Campus Run x Pocari Sweat! have you heard of Pocari before? (3 msgs. Msg&amp;data
+                    rates may apply. Reply STOP to opt out, HELP for help)
+                  </span>
+                </div>
+              </Phone>
+            </div>
+            <figcaption className="mt-4 text-center text-[12px] text-muted">
+              Opt-in by keyword for Campus Run texts · campusrun.network/text-offers
+            </figcaption>
+          </figure>
         </Section>
 
         <Section label="What we send">
