@@ -16,7 +16,7 @@ import { SiteFooter } from "./SiteChrome";
  * prefers-reduced-motion → the two panels render as a plain stacked scroll instead.
  *
  * Palette is the Campus Run design system (ink + white + scarce gold). Gold Rule:
- * gold only marks something earned or live (the "converted." word, the LIVE pill,
+ * gold only marks something earned or live (the "worked." word, the LIVE pill,
  * the Converted metric) — never decoration.
  */
 
@@ -150,25 +150,8 @@ function Hero({
         />
       </div>
 
-      {/* Decorative concentric-circles + crosshair, top-right. */}
-      <svg
-        width="360"
-        height="360"
-        viewBox="0 0 320 320"
-        fill="none"
-        aria-hidden="true"
-        className="pointer-events-none absolute z-[1] opacity-[.18]"
-        style={{ right: "-40px", top: "6%" }}
-      >
-        <circle cx="160" cy="160" r="56" stroke="#FFCC00" strokeWidth="1.1" />
-        <circle cx="160" cy="160" r="98" stroke="#fff" strokeWidth="1" />
-        <circle cx="160" cy="160" r="140" stroke="#fff" strokeWidth=".8" opacity=".5" />
-        <path d="M160 40v40M160 240v40M40 160h40M240 160h40" stroke="#fff" strokeWidth="1" />
-        <circle cx="160" cy="160" r="3.5" fill="#FFCC00" />
-      </svg>
-
       <div className="relative z-[3] flex min-h-dvh flex-col">
-        <Nav onHowItWorks={onSeeHow} />
+        <Nav onProof={onSeeHow} />
 
         <div className="flex flex-1 items-center">
           <div className="mx-auto w-full max-w-[1120px] px-6 sm:px-8">
@@ -178,32 +161,32 @@ function Hero({
                 style={{ color: WHITE_72 }}
               >
                 <Icon.Pulse className="text-gold" size={15} />
-                Attribution is the spine
+                Measured Wallet Proof
               </div>
               <h1 className="m-0 font-display text-[40px] font-medium leading-[1.04] tracking-[-0.025em] text-white text-balance sm:text-[54px] lg:text-[64px] lg:leading-[1.02]">
-                We tell you exactly where and when the product actually{" "}
-                <span className="text-gold">converted.</span>
+                Prove your sampling day <span className="text-gold">worked.</span>
               </h1>
               <p
                 className="mb-9 mt-6 max-w-[33em] text-[17px] leading-[1.6] sm:text-[18px]"
                 style={{ color: WHITE_78 }}
               >
-                The activation is the surface. The attribution underneath is the
-                product, and it&rsquo;s the one thing no other activation gives you.
+                You already run the booth. We add the measurement: an NFC card on
+                the table, a pass in Apple Wallet, tracked links, and a report that
+                shows who tapped, who added, who kept it, and who clicked.
               </p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
                 <Link
                   href={PILOT}
                   className="rounded-full bg-white px-7 py-[15px] text-[15px] font-semibold text-ink"
                 >
-                  Request a pilot
+                  Book a call
                 </Link>
                 <button
                   type="button"
                   onClick={onSeeHow}
                   className="cursor-pointer text-[15px] font-semibold text-white"
                 >
-                  See how attribution works &rarr;
+                  See the Pocari &times; LMU numbers &darr;
                 </button>
               </div>
             </div>
@@ -216,7 +199,7 @@ function Hero({
             onClick={onSeeHow}
             className="flex cursor-pointer flex-col items-center gap-1.5 self-center pb-8"
             style={{ color: "rgba(255,255,255,.62)" }}
-            aria-label="Scroll to how attribution works"
+            aria-label="Scroll to the Pocari Sweat × LMU numbers"
           >
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">
               Scroll
@@ -229,7 +212,7 @@ function Hero({
   );
 }
 
-function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
+function Nav({ onProof }: { onProof: () => void }) {
   return (
     <div className="mx-auto w-full max-w-[1120px] px-6 pt-6 sm:px-8">
       <nav
@@ -247,8 +230,8 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
         </div>
         <div className="hidden items-center gap-[26px] text-[14px] font-medium text-ink md:flex">
           <Link href="/for-brands">For brands</Link>
-          <button type="button" onClick={onHowItWorks} className="cursor-pointer">
-            How it works
+          <button type="button" onClick={onProof} className="cursor-pointer">
+            Proof
           </button>
           <Link href="/good-company">Good company</Link>
         </div>
@@ -263,7 +246,7 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
             href={PILOT}
             className="rounded-full bg-ink px-[18px] py-2.5 text-[14px] font-semibold text-white"
           >
-            Request a pilot
+            Book a call
           </Link>
         </div>
       </nav>
