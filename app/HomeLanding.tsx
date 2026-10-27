@@ -94,6 +94,7 @@ export default function HomeLanding() {
         <section className="relative min-h-dvh overflow-hidden bg-ink">{hero}</section>
         <section className="relative bg-white">{console_}</section>
         <DayAndReport />
+        <Menu />
         <SiteFooter tagline="stop guessing. get stoked" />
       </div>
     );
@@ -117,6 +118,7 @@ export default function HomeLanding() {
         </div>
       </div>
       <DayAndReport />
+      <Menu />
       <SiteFooter tagline="stop guessing. get stoked" />
     </div>
   );
@@ -276,13 +278,16 @@ function Console({ onBackTop }: { onBackTop: () => void }) {
             One table at the Wellness Wednesday market, 11 AM to 2 PM, 200+ Ice
             Slurry samples. Every number here came off the cards and the passes.
           </p>
-          <div className="flex flex-wrap items-center gap-3.5">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
             <Link
               href={PILOT}
               className="rounded-full bg-ink px-[26px] py-3.5 text-[15px] font-semibold text-white"
             >
               Book a call
             </Link>
+            <a href="#menu" className="text-[15px] font-semibold text-ink">
+              What you can buy &darr;
+            </a>
           </div>
           <button
             type="button"
@@ -469,6 +474,70 @@ function DayAndReport() {
               Prize wheel and samples at the table.
             </figcaption>
           </figure>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------- Menu ----------------------------------- */
+
+const MENU = [
+  {
+    name: "Core",
+    role: "Wallet proof.",
+    body: "NFC cards at your table, an Apple Wallet pass, tracked links, and the report: who tapped, who added, who kept it, who clicked.",
+  },
+  {
+    name: "Plus",
+    role: "Re-engage.",
+    body: "One update later from the brand to everyone who kept the pass: a new product, an event, where to buy. Clicks reported.",
+  },
+  {
+    name: "Advanced",
+    role: "In-store.",
+    body: "A coupon barcode on the pass that a cashier scans, so a purchase ties back to the tap. Only when a store will scan.",
+  },
+];
+
+/** Names and what each layer does. No prices on the site: a day gets scoped on a call. */
+function Menu() {
+  return (
+    <section id="menu" className="border-t border-line bg-fill">
+      <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:px-8 sm:py-20">
+        <div className="mb-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          <Icon.Wallet className="text-ink" size={15} />
+          Three ways to run it
+        </div>
+        <h2 className="m-0 font-display text-[32px] font-medium leading-[1.08] tracking-[-0.025em] text-ink sm:text-[40px]">
+          Core, Plus, Advanced.
+        </h2>
+
+        <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-3">
+          {MENU.map((m) => (
+            <div key={m.name} className="border-t border-ink pt-5">
+              <h3 className="m-0 font-display text-[22px] font-bold tracking-[-0.02em] text-ink">
+                {m.name}
+              </h3>
+              <p className="mt-2 text-[15px] leading-[1.6] text-ink">
+                <span className="font-semibold">{m.role} </span>
+                <span className="text-muted">{m.body}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+          <p className="m-0 max-w-[36em] text-[15px] leading-[1.6] text-muted">
+            No prices here. Quoting a sampling day before seeing it is guesswork, so
+            tell us about yours and we&rsquo;ll scope it on a call.
+          </p>
+          <Link
+            href={PILOT}
+            className="shrink-0 self-start rounded-full bg-ink px-[26px] py-3.5 text-[15px] font-semibold text-white sm:self-auto"
+          >
+            Book a call
+          </Link>
         </div>
       </div>
     </section>
