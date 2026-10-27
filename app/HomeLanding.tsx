@@ -16,8 +16,12 @@ import { SiteFooter } from "./SiteChrome";
  * prefers-reduced-motion → the two panels render as a plain stacked scroll instead.
  *
  * Palette is the Campus Run design system (ink + white + scarce gold). Gold Rule:
- * gold only marks something earned or live (the "worked." word, the LIVE pill,
- * the Converted metric) — never decoration.
+ * gold only marks something earned (the "worked." word, the passes-kept metric) —
+ * never decoration.
+ *
+ * Panel B shows the one real activation: Pocari Sweat × LMU Wellness Wednesday,
+ * Oct 14 2026. Numbers come from the Campus Run activation report (data through
+ * Oct 21 2026). Change them only when there is a new report.
  */
 
 const WHITE_72 = "rgba(255,255,255,.72)";
@@ -283,28 +287,21 @@ function Console({ onBackTop }: { onBackTop: () => void }) {
         <div>
           <div className="mb-6 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
             <Icon.Scan className="text-ink" size={15} />
-            Data vs guesswork
+            Pocari Sweat &times; LMU &middot; Oct 14, 2026
           </div>
           <h2 className="m-0 font-display text-[38px] font-medium leading-[1.06] tracking-[-0.025em] text-ink text-balance sm:text-[48px] lg:text-[56px] lg:leading-[1.04]">
-            Every touch, on the record.
+            94 people tapped. 64 still carry Pocari in their Wallet.
           </h2>
           <p className="mb-8 mt-5 max-w-[34em] text-[17px] leading-[1.6] text-muted sm:text-[18px]">
-            A per-event code ties each physical moment to what it drove. The whole
-            activation reads back as live numbers, not a hunch.
+            One table at the Wellness Wednesday market, 11 AM to 2 PM, 200+ Ice
+            Slurry samples. Every number here came off the cards and the passes.
           </p>
           <div className="flex flex-wrap items-center gap-3.5">
             <Link
               href={PILOT}
               className="rounded-full bg-ink px-[26px] py-3.5 text-[15px] font-semibold text-white"
             >
-              Request a pilot
-            </Link>
-            <Link
-              href="/admin/login"
-              className="rounded-full border border-[var(--color-line)] px-6 py-[13px] text-[15px] font-semibold text-ink"
-              style={{ borderColor: "#D2D2D7" }}
-            >
-              See a live dashboard
+              Book a call
             </Link>
           </div>
           <button
@@ -317,83 +314,70 @@ function Console({ onBackTop }: { onBackTop: () => void }) {
           </button>
         </div>
 
-        <ConsoleCard />
+        <FunnelCard />
       </div>
     </div>
   );
 }
 
-function ConsoleCard() {
+/** The Pocari × LMU funnel, straight from the activation report. */
+function FunnelCard() {
   return (
     <div
       className="rounded-2xl bg-ink p-[18px]"
       style={{ boxShadow: "0 24px 60px rgba(0,32,50,.28)" }}
     >
-      {/* Header: thumbnail + event name + code, LIVE pill. */}
-      <div className="mb-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="h-11 w-11 flex-none overflow-hidden rounded-[10px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/img/console-thumb.jpg"
-              alt="Activation on Bruinwalk"
-              className="h-full w-full object-cover"
-            />
+      <div className="mb-3.5 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[14px] font-semibold text-white">
+            Pocari Sweat &times; LMU Wellness Wednesday
           </div>
-          <div>
-            <div className="text-[14px] font-semibold text-white">
-              UCLA &times; ACE Health Clinic
-            </div>
-            <div
-              className="mt-0.5 font-mono text-[11px]"
-              style={{ color: "rgba(255,255,255,.6)" }}
-            >
-              ACE&middot;BW&middot;0423
-            </div>
+          <div
+            className="mt-0.5 font-mono text-[11px]"
+            style={{ color: "rgba(255,255,255,.6)" }}
+          >
+            Wed Oct 14, 2026 &middot; 11 AM&ndash;2 PM PT &middot; one table
           </div>
         </div>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-[5px] text-[11px] font-semibold text-white"
-          style={{
-            background: "rgba(255,204,0,.18)",
-            border: "1px solid rgba(255,204,0,.32)",
-          }}
+          className="inline-flex flex-none items-center rounded-full px-2.5 py-[5px] text-[11px] font-semibold text-white"
+          style={{ background: CARD_FILL, border: `1px solid ${CARD_LINE}` }}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-          LIVE
+          Activation report
         </span>
       </div>
 
-      {/* 2x2 metric grid. */}
+      {/* The four tracked steps, in funnel order. */}
       <div className="grid grid-cols-2 gap-2.5">
-        <Metric icon={<Icon.Bars size={18} />} label="Opt-ins" value="1,284" />
-        <Metric icon={<Icon.Target size={18} />} label="Converted" value="312" gold />
-        <Metric icon={<Icon.Pulse size={18} />} label="Repeat rate" value="71%" />
+        <Metric icon={<Icon.Scan size={18} />} label="Tapped a card" value="94" sub="114 taps" />
         <Metric
-          icon={<Icon.Pin size={18} />}
-          label="Top spot"
-          value={
-            <span className="text-[16px] font-semibold leading-[1.2]">
-              Bruinwalk
-              <br />
-              11am
-            </span>
-          }
+          icon={<Icon.Wallet size={18} />}
+          label="Added to Apple Wallet"
+          value="65"
+          sub="69% of people who tapped"
+        />
+        <Metric
+          icon={<Icon.Check size={18} />}
+          label="Still in Wallet"
+          value="64"
+          sub="1 removed, as of Oct 21"
+          gold
+        />
+        <Metric
+          icon={<Icon.ArrowUpRight size={18} />}
+          label="Clicked through"
+          value="26"
+          sub="43 clicks: 39 shop offer, 4 Instagram"
         />
       </div>
 
-      {/* Live-feed strip. */}
-      <div
-        className="mt-2.5 flex items-center gap-2.5 rounded-xl px-3.5 py-3"
-        style={{ background: CARD_FILL, border: `1px solid ${CARD_LINE}` }}
+      <p
+        className="mb-0 mt-2.5 rounded-xl px-3.5 py-3 text-[12px] leading-[1.5]"
+        style={{ background: CARD_FILL, border: `1px solid ${CARD_LINE}`, color: "rgba(255,255,255,.75)" }}
       >
-        <span style={{ color: "rgba(255,255,255,.75)" }}>
-          <Icon.Clock size={17} />
-        </span>
-        <span className="font-mono text-[12px]" style={{ color: "rgba(255,255,255,.8)" }}>
-          14:02 &middot; scan traced to table &middot; +1 conversion
-        </span>
-      </div>
+        Taps, Wallet adds and clicks were tracked by Campus Run. The 200+ samples
+        are an on-site estimate; the table ran out.
+      </p>
     </div>
   );
 }
@@ -402,11 +386,13 @@ function Metric({
   icon,
   label,
   value,
+  sub,
   gold,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: React.ReactNode;
+  value: string;
+  sub: string;
   gold?: boolean;
 }) {
   return (
@@ -424,16 +410,15 @@ function Metric({
       <div className="mt-2 text-[11px]" style={{ color: WHITE_65 }}>
         {label}
       </div>
-      {typeof value === "string" ? (
-        <div
-          className="font-display text-[26px] font-black leading-none tabular-nums"
-          style={{ color: gold ? "var(--color-gold)" : "#fff" }}
-        >
-          {value}
-        </div>
-      ) : (
-        <div className="mt-0.5 text-white">{value}</div>
-      )}
+      <div
+        className="font-display text-[26px] font-black leading-none tabular-nums"
+        style={{ color: gold ? "var(--color-gold)" : "#fff" }}
+      >
+        {value}
+      </div>
+      <div className="mt-1.5 text-[11px] leading-[1.35]" style={{ color: WHITE_65 }}>
+        {sub}
+      </div>
     </div>
   );
 }
@@ -464,28 +449,20 @@ const Icon = {
       <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />
     </svg>
   ),
-  Bars: ({ size = 18, className }: IconProps) => (
+  Wallet: ({ size = 18, className }: IconProps) => (
     <svg {...base(size)} className={className} aria-hidden="true">
-      <path d="M4 20v-4M10 20v-8M16 20v-12M22 20v-6" />
+      <rect x="3" y="6" width="18" height="13" rx="2" />
+      <path d="M3 10h18M16 14.5h2" />
     </svg>
   ),
-  Target: ({ size = 18, className }: IconProps) => (
+  Check: ({ size = 18, className }: IconProps) => (
     <svg {...base(size)} className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22" />
+      <path d="M20 6 9 17l-5-5" />
     </svg>
   ),
-  Pin: ({ size = 18, className }: IconProps) => (
+  ArrowUpRight: ({ size = 18, className }: IconProps) => (
     <svg {...base(size)} className={className} aria-hidden="true">
-      <path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z" />
-      <circle cx="12" cy="10" r="2.5" />
-    </svg>
-  ),
-  Clock: ({ size = 18, className }: IconProps) => (
-    <svg {...base(size)} className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
+      <path d="M7 17 17 7M8 7h9v9" />
     </svg>
   ),
   ChevronDown: ({ size = 18, className }: IconProps) => (
