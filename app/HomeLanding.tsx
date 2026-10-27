@@ -93,6 +93,7 @@ export default function HomeLanding() {
       <div>
         <section className="relative min-h-dvh overflow-hidden bg-ink">{hero}</section>
         <section className="relative bg-white">{console_}</section>
+        <DayAndReport />
         <SiteFooter tagline="stop guessing. get stoked" />
       </div>
     );
@@ -115,6 +116,7 @@ export default function HomeLanding() {
           {hero}
         </div>
       </div>
+      <DayAndReport />
       <SiteFooter tagline="stop guessing. get stoked" />
     </div>
   );
@@ -131,25 +133,23 @@ function Hero({
 }) {
   return (
     <div className="relative flex min-h-dvh flex-col">
-      {/* Blurred activation photo over solid ink, with a diagonal ink wash on top. */}
+      {/* Ice Slurry pouches at the LMU table, Oct 14 2026 (photo: Gofer), under a
+          diagonal ink wash: dark on the left where the copy sits, lighter on the
+          right so the product stays visible. */}
       <div className="absolute inset-0 z-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/uploads/IMG_5792.jpg"
+          src="/img/pocari-lmu-ledge.jpg"
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-100"
-          style={{
-            objectPosition: "center 34%",
-            filter: "blur(60px) saturate(1.15)",
-            transform: "scale(1.2)",
-          }}
+          className="h-full w-full object-cover"
+          style={{ objectPosition: "center 45%" }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(120deg,rgba(0,32,50,.41) 0%,rgba(0,32,50,.29) 52%,rgba(0,32,50,.18) 100%)",
+              "linear-gradient(120deg,rgba(0,32,50,.9) 0%,rgba(0,32,50,.7) 48%,rgba(0,32,50,.3) 100%)",
           }}
         />
       </div>
@@ -262,27 +262,7 @@ function Nav({ onProof }: { onProof: () => void }) {
 
 function Console({ onBackTop }: { onBackTop: () => void }) {
   return (
-    <div className="relative flex min-h-dvh items-center overflow-hidden">
-      {/* Blurred photo over a white scrim, behind the console content. */}
-      <div className="absolute inset-0 z-0">
-        <div
-          className="absolute inset-0"
-          style={{ background: "rgba(255,255,255,.25)" }}
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/uploads/IMG_3419.JPG"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{
-            objectPosition: "center 87%",
-            transform: "scale(1)",
-            opacity: 0.66,
-            filter: "blur(15px) saturate(1) grayscale(0.04)",
-          }}
-        />
-      </div>
+    <div id="proof" className="relative flex min-h-dvh items-center overflow-hidden bg-white">
       <div className="relative z-[1] mx-auto grid w-full max-w-[1120px] grid-cols-1 items-center gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
         <div>
           <div className="mb-6 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
@@ -328,15 +308,25 @@ function FunnelCard() {
       style={{ boxShadow: "0 24px 60px rgba(0,32,50,.28)" }}
     >
       <div className="mb-3.5 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-[14px] font-semibold text-white">
-            Pocari Sweat &times; LMU Wellness Wednesday
+        <div className="flex items-center gap-2.5">
+          <div className="h-11 w-11 flex-none overflow-hidden rounded-[10px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/pocari-lmu-table.jpg"
+              alt=""
+              className="h-full w-full object-cover"
+            />
           </div>
-          <div
-            className="mt-0.5 font-mono text-[11px]"
-            style={{ color: "rgba(255,255,255,.6)" }}
-          >
-            Wed Oct 14, 2026 &middot; 11 AM&ndash;2 PM PT &middot; one table
+          <div>
+            <div className="text-[14px] font-semibold text-white">
+              Pocari Sweat &times; LMU Wellness Wednesday
+            </div>
+            <div
+              className="mt-0.5 font-mono text-[11px]"
+              style={{ color: "rgba(255,255,255,.6)" }}
+            >
+              Wed Oct 14, 2026 &middot; 11 AM&ndash;2 PM PT &middot; one table
+            </div>
           </div>
         </div>
         <span
@@ -420,6 +410,68 @@ function Metric({
         {sub}
       </div>
     </div>
+  );
+}
+
+/* -------------------------- The day, and the report ------------------------- */
+
+/**
+ * Normal-flow section under the reveal: page one of the report Pocari received,
+ * and two of Gofer's stills from the table. Real pictures of the real day; no
+ * stock, nothing generated.
+ */
+function DayAndReport() {
+  return (
+    <section className="border-t border-line bg-white">
+      <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:px-8 sm:py-20">
+        <div className="mb-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          <Icon.Pulse className="text-ink" size={15} />
+          The day, and the report
+        </div>
+        <p className="mb-8 max-w-[38em] text-[17px] leading-[1.6] text-muted sm:text-[18px]">
+          Photos from the table on Oct 14, shot by Gofer. The still below is page one
+          of the report Pocari received: the funnel, and card taps by half hour.
+        </p>
+
+        <figure className="m-0 overflow-hidden rounded-2xl border border-line">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/img/pocari-lmu-report.jpg"
+            alt="Page one of the Pocari Sweat × LMU activation report: 200+ samples, 94 people tapped a card, 65 Apple Wallet passes, 64 still in wallets, the funnel, and a chart of card taps and Wallet adds in 30-minute bins"
+            className="block h-auto w-full"
+            loading="lazy"
+          />
+        </figure>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <figure className="m-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/pocari-lmu-table.jpg"
+              alt="A student holding up an Ice Slurry pouch in front of the Pocari Sweat tent at LMU"
+              className="aspect-[4/3] w-full rounded-2xl object-cover"
+              loading="lazy"
+            />
+            <figcaption className="mt-2 text-[13px] text-muted">
+              The Pocari Sweat table at the Wellness Wednesday market.
+            </figcaption>
+          </figure>
+          <figure className="m-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/pocari-lmu-wheel.jpg"
+              alt="A staffer behind the Pocari Sweat table with the prize wheel and samples"
+              className="aspect-[4/3] w-full rounded-2xl object-cover"
+              style={{ objectPosition: "center 30%" }}
+              loading="lazy"
+            />
+            <figcaption className="mt-2 text-[13px] text-muted">
+              Prize wheel and samples at the table.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
   );
 }
 
