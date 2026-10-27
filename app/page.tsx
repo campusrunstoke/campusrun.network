@@ -5,14 +5,14 @@ import HomeLanding from "./HomeLanding";
 // NFC cards point at /stoked and /go directly, so nothing about capture changes;
 // the stoke chart stays reachable at /stoke-chart.html.
 export const metadata: Metadata = {
-  title: "Campus Run — We tell you where the product actually converted",
+  title: "Campus Run — Prove your sampling day worked",
   description:
-    "Campus Run runs brand activations on college campuses and ties each physical moment to what it drove. The activation is the surface; the attribution underneath is the product.",
+    "Measured Wallet Proof for campus and booth sampling: an NFC card on the table, a pass in Apple Wallet, tracked links, and a report of who tapped, added, kept it, and clicked. Pocari Sweat × LMU: 94 tapped, 65 added, 64 kept.",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Campus Run — Attribution is the spine",
+    title: "Campus Run — Measured Wallet Proof",
     description:
-      "We tell you exactly where and when the product actually converted. Request a pilot.",
+      "You already run the booth. We add the measurement and the report. Book a call.",
     type: "website",
   },
 };

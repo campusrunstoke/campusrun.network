@@ -32,7 +32,7 @@ export function SiteNav() {
         </Link>
         <div className="hidden items-center gap-[26px] text-[14px] font-medium text-ink md:flex">
           <Link href="/for-brands">For brands</Link>
-          <Link href="/">How it works</Link>
+          <Link href="/#proof">Proof</Link>
           <Link href="/good-company">Good company</Link>
         </div>
         <div className="flex items-center gap-4">
@@ -46,7 +46,7 @@ export function SiteNav() {
             href="/request-a-pilot"
             className="rounded-full bg-ink px-[18px] py-2.5 text-[14px] font-semibold text-white"
           >
-            Request a pilot
+            Book a call
           </Link>
         </div>
       </nav>
@@ -233,7 +233,7 @@ export function BulletList({
 /** The closing ask — an ink card echoing the homepage console, with the CTA. */
 export function AskCard({
   children,
-  cta = "Request a pilot",
+  cta = "Book a call",
 }: {
   children: React.ReactNode;
   cta?: string;
@@ -311,7 +311,7 @@ export function SiteFooter({ tagline }: { tagline?: string }) {
             links={[
               { label: "For brands", href: "/for-brands" },
               { label: "Good company", href: "/good-company" },
-              { label: "Request a pilot", href: "/request-a-pilot" },
+              { label: "Book a call", href: "/request-a-pilot" },
               { label: "Sign in", href: "/admin/login" },
             ]}
           />

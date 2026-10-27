@@ -16,8 +16,12 @@ import { SiteFooter } from "./SiteChrome";
  * prefers-reduced-motion → the two panels render as a plain stacked scroll instead.
  *
  * Palette is the Campus Run design system (ink + white + scarce gold). Gold Rule:
- * gold only marks something earned or live (the "converted." word, the LIVE pill,
- * the Converted metric) — never decoration.
+ * gold only marks something earned (the "worked." word, the passes-kept metric) —
+ * never decoration.
+ *
+ * Panel B shows the one real activation: Pocari Sweat × LMU Wellness Wednesday,
+ * Oct 14 2026. Numbers come from the Campus Run activation report (data through
+ * Oct 21 2026). Change them only when there is a new report.
  */
 
 const WHITE_72 = "rgba(255,255,255,.72)";
@@ -81,6 +85,14 @@ export default function HomeLanding() {
     window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
   const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  // Other pages link to /#proof. In the reveal layout the proof panel sits under
+  // the hero at scroll 0, so a plain anchor jump would show nothing: scroll to it.
+  useEffect(() => {
+    if (window.location.hash === "#proof") {
+      window.scrollTo({ top: window.innerHeight });
+    }
+  }, []);
+
   const hero = <Hero onSeeHow={toConsole} reduced={stacked} />;
   const console_ = <Console onBackTop={toTop} />;
 
@@ -89,6 +101,8 @@ export default function HomeLanding() {
       <div>
         <section className="relative min-h-dvh overflow-hidden bg-ink">{hero}</section>
         <section className="relative bg-white">{console_}</section>
+        <DayAndReport />
+        <Menu />
         <SiteFooter tagline="stop guessing. get stoked" />
       </div>
     );
@@ -111,6 +125,8 @@ export default function HomeLanding() {
           {hero}
         </div>
       </div>
+      <DayAndReport />
+      <Menu />
       <SiteFooter tagline="stop guessing. get stoked" />
     </div>
   );
@@ -127,48 +143,29 @@ function Hero({
 }) {
   return (
     <div className="relative flex min-h-dvh flex-col">
-      {/* Blurred activation photo over solid ink, with a diagonal ink wash on top. */}
+      {/* Ice Slurry pouches at the LMU table, Oct 14 2026 (photo: Gofer), under a
+          diagonal ink wash: dark on the left where the copy sits, lighter on the
+          right so the product stays visible. */}
       <div className="absolute inset-0 z-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/uploads/IMG_5792.jpg"
+          src="/img/pocari-lmu-ledge.jpg"
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-100"
-          style={{
-            objectPosition: "center 34%",
-            filter: "blur(60px) saturate(1.15)",
-            transform: "scale(1.2)",
-          }}
+          className="h-full w-full object-cover"
+          style={{ objectPosition: "center 45%" }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(120deg,rgba(0,32,50,.41) 0%,rgba(0,32,50,.29) 52%,rgba(0,32,50,.18) 100%)",
+              "linear-gradient(120deg,rgba(0,32,50,.9) 0%,rgba(0,32,50,.7) 48%,rgba(0,32,50,.3) 100%)",
           }}
         />
       </div>
 
-      {/* Decorative concentric-circles + crosshair, top-right. */}
-      <svg
-        width="360"
-        height="360"
-        viewBox="0 0 320 320"
-        fill="none"
-        aria-hidden="true"
-        className="pointer-events-none absolute z-[1] opacity-[.18]"
-        style={{ right: "-40px", top: "6%" }}
-      >
-        <circle cx="160" cy="160" r="56" stroke="#FFCC00" strokeWidth="1.1" />
-        <circle cx="160" cy="160" r="98" stroke="#fff" strokeWidth="1" />
-        <circle cx="160" cy="160" r="140" stroke="#fff" strokeWidth=".8" opacity=".5" />
-        <path d="M160 40v40M160 240v40M40 160h40M240 160h40" stroke="#fff" strokeWidth="1" />
-        <circle cx="160" cy="160" r="3.5" fill="#FFCC00" />
-      </svg>
-
       <div className="relative z-[3] flex min-h-dvh flex-col">
-        <Nav onHowItWorks={onSeeHow} />
+        <Nav onProof={onSeeHow} />
 
         <div className="flex flex-1 items-center">
           <div className="mx-auto w-full max-w-[1120px] px-6 sm:px-8">
@@ -178,32 +175,32 @@ function Hero({
                 style={{ color: WHITE_72 }}
               >
                 <Icon.Pulse className="text-gold" size={15} />
-                Attribution is the spine
+                Measured Wallet Proof
               </div>
               <h1 className="m-0 font-display text-[40px] font-medium leading-[1.04] tracking-[-0.025em] text-white text-balance sm:text-[54px] lg:text-[64px] lg:leading-[1.02]">
-                We tell you exactly where and when the product actually{" "}
-                <span className="text-gold">converted.</span>
+                Prove your sampling day <span className="text-gold">worked.</span>
               </h1>
               <p
                 className="mb-9 mt-6 max-w-[33em] text-[17px] leading-[1.6] sm:text-[18px]"
                 style={{ color: WHITE_78 }}
               >
-                The activation is the surface. The attribution underneath is the
-                product, and it&rsquo;s the one thing no other activation gives you.
+                You already run the booth. We add the measurement: an NFC card on
+                the table, a pass in Apple Wallet, tracked links, and a report that
+                shows who tapped, who added, who kept it, and who clicked.
               </p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
                 <Link
                   href={PILOT}
                   className="rounded-full bg-white px-7 py-[15px] text-[15px] font-semibold text-ink"
                 >
-                  Request a pilot
+                  Book a call
                 </Link>
                 <button
                   type="button"
                   onClick={onSeeHow}
                   className="cursor-pointer text-[15px] font-semibold text-white"
                 >
-                  See how attribution works &rarr;
+                  See the Pocari &times; LMU numbers &darr;
                 </button>
               </div>
             </div>
@@ -216,7 +213,7 @@ function Hero({
             onClick={onSeeHow}
             className="flex cursor-pointer flex-col items-center gap-1.5 self-center pb-8"
             style={{ color: "rgba(255,255,255,.62)" }}
-            aria-label="Scroll to how attribution works"
+            aria-label="Scroll to the Pocari Sweat × LMU numbers"
           >
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">
               Scroll
@@ -229,7 +226,7 @@ function Hero({
   );
 }
 
-function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
+function Nav({ onProof }: { onProof: () => void }) {
   return (
     <div className="mx-auto w-full max-w-[1120px] px-6 pt-6 sm:px-8">
       <nav
@@ -247,8 +244,8 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
         </div>
         <div className="hidden items-center gap-[26px] text-[14px] font-medium text-ink md:flex">
           <Link href="/for-brands">For brands</Link>
-          <button type="button" onClick={onHowItWorks} className="cursor-pointer">
-            How it works
+          <button type="button" onClick={onProof} className="cursor-pointer">
+            Proof
           </button>
           <Link href="/good-company">Good company</Link>
         </div>
@@ -263,7 +260,7 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
             href={PILOT}
             className="rounded-full bg-ink px-[18px] py-2.5 text-[14px] font-semibold text-white"
           >
-            Request a pilot
+            Book a call
           </Link>
         </div>
       </nav>
@@ -275,54 +272,30 @@ function Nav({ onHowItWorks }: { onHowItWorks: () => void }) {
 
 function Console({ onBackTop }: { onBackTop: () => void }) {
   return (
-    <div className="relative flex min-h-dvh items-center overflow-hidden">
-      {/* Blurred photo over a white scrim, behind the console content. */}
-      <div className="absolute inset-0 z-0">
-        <div
-          className="absolute inset-0"
-          style={{ background: "rgba(255,255,255,.25)" }}
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/uploads/IMG_3419.JPG"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{
-            objectPosition: "center 87%",
-            transform: "scale(1)",
-            opacity: 0.66,
-            filter: "blur(15px) saturate(1) grayscale(0.04)",
-          }}
-        />
-      </div>
+    <div id="proof" className="relative flex min-h-dvh items-center overflow-hidden bg-white">
       <div className="relative z-[1] mx-auto grid w-full max-w-[1120px] grid-cols-1 items-center gap-12 px-6 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
         <div>
           <div className="mb-6 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
             <Icon.Scan className="text-ink" size={15} />
-            Data vs guesswork
+            Pocari Sweat &times; LMU &middot; Oct 14, 2026
           </div>
           <h2 className="m-0 font-display text-[38px] font-medium leading-[1.06] tracking-[-0.025em] text-ink text-balance sm:text-[48px] lg:text-[56px] lg:leading-[1.04]">
-            Every touch, on the record.
+            94 people tapped. 64 still carry Pocari in their Wallet.
           </h2>
           <p className="mb-8 mt-5 max-w-[34em] text-[17px] leading-[1.6] text-muted sm:text-[18px]">
-            A per-event code ties each physical moment to what it drove. The whole
-            activation reads back as live numbers, not a hunch.
+            One table at the Wellness Wednesday market, 11 AM to 2 PM, 200+ Ice
+            Slurry samples. Every number here came off the cards and the passes.
           </p>
-          <div className="flex flex-wrap items-center gap-3.5">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
             <Link
               href={PILOT}
               className="rounded-full bg-ink px-[26px] py-3.5 text-[15px] font-semibold text-white"
             >
-              Request a pilot
+              Book a call
             </Link>
-            <Link
-              href="/admin/login"
-              className="rounded-full border border-[var(--color-line)] px-6 py-[13px] text-[15px] font-semibold text-ink"
-              style={{ borderColor: "#D2D2D7" }}
-            >
-              See a live dashboard
-            </Link>
+            <a href="#menu" className="text-[15px] font-semibold text-ink">
+              What you can buy &darr;
+            </a>
           </div>
           <button
             type="button"
@@ -334,83 +307,80 @@ function Console({ onBackTop }: { onBackTop: () => void }) {
           </button>
         </div>
 
-        <ConsoleCard />
+        <FunnelCard />
       </div>
     </div>
   );
 }
 
-function ConsoleCard() {
+/** The Pocari × LMU funnel, straight from the activation report. */
+function FunnelCard() {
   return (
     <div
       className="rounded-2xl bg-ink p-[18px]"
       style={{ boxShadow: "0 24px 60px rgba(0,32,50,.28)" }}
     >
-      {/* Header: thumbnail + event name + code, LIVE pill. */}
-      <div className="mb-3.5 flex items-center justify-between">
+      <div className="mb-3.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="h-11 w-11 flex-none overflow-hidden rounded-[10px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/img/console-thumb.jpg"
-              alt="Activation on Bruinwalk"
+              src="/img/pocari-lmu-table.jpg"
+              alt=""
               className="h-full w-full object-cover"
             />
           </div>
           <div>
             <div className="text-[14px] font-semibold text-white">
-              UCLA &times; ACE Health Clinic
+              Pocari Sweat &times; LMU Wellness Wednesday
             </div>
             <div
               className="mt-0.5 font-mono text-[11px]"
               style={{ color: "rgba(255,255,255,.6)" }}
             >
-              ACE&middot;BW&middot;0423
+              Wed Oct 14, 2026 &middot; 11 AM&ndash;2 PM PT &middot; one table
             </div>
           </div>
         </div>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-[5px] text-[11px] font-semibold text-white"
-          style={{
-            background: "rgba(255,204,0,.18)",
-            border: "1px solid rgba(255,204,0,.32)",
-          }}
+          className="inline-flex flex-none items-center rounded-full px-2.5 py-[5px] text-[11px] font-semibold text-white"
+          style={{ background: CARD_FILL, border: `1px solid ${CARD_LINE}` }}
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-          LIVE
+          Activation report
         </span>
       </div>
 
-      {/* 2x2 metric grid. */}
+      {/* The four tracked steps, in funnel order. */}
       <div className="grid grid-cols-2 gap-2.5">
-        <Metric icon={<Icon.Bars size={18} />} label="Opt-ins" value="1,284" />
-        <Metric icon={<Icon.Target size={18} />} label="Converted" value="312" gold />
-        <Metric icon={<Icon.Pulse size={18} />} label="Repeat rate" value="71%" />
+        <Metric icon={<Icon.Scan size={18} />} label="Tapped a card" value="94" sub="114 taps" />
         <Metric
-          icon={<Icon.Pin size={18} />}
-          label="Top spot"
-          value={
-            <span className="text-[16px] font-semibold leading-[1.2]">
-              Bruinwalk
-              <br />
-              11am
-            </span>
-          }
+          icon={<Icon.Wallet size={18} />}
+          label="Added to Apple Wallet"
+          value="65"
+          sub="69% of people who tapped"
+        />
+        <Metric
+          icon={<Icon.Check size={18} />}
+          label="Still in Wallet"
+          value="64"
+          sub="1 removed, as of Oct 21"
+          gold
+        />
+        <Metric
+          icon={<Icon.ArrowUpRight size={18} />}
+          label="Clicked through"
+          value="26"
+          sub="43 clicks: 39 shop offer, 4 Instagram"
         />
       </div>
 
-      {/* Live-feed strip. */}
-      <div
-        className="mt-2.5 flex items-center gap-2.5 rounded-xl px-3.5 py-3"
-        style={{ background: CARD_FILL, border: `1px solid ${CARD_LINE}` }}
+      <p
+        className="mb-0 mt-2.5 rounded-xl px-3.5 py-3 text-[12px] leading-[1.5]"
+        style={{ background: CARD_FILL, border: `1px solid ${CARD_LINE}`, color: "rgba(255,255,255,.75)" }}
       >
-        <span style={{ color: "rgba(255,255,255,.75)" }}>
-          <Icon.Clock size={17} />
-        </span>
-        <span className="font-mono text-[12px]" style={{ color: "rgba(255,255,255,.8)" }}>
-          14:02 &middot; scan traced to table &middot; +1 conversion
-        </span>
-      </div>
+        Taps, Wallet adds and clicks were tracked by Campus Run. The 200+ samples
+        are an on-site estimate; the table ran out.
+      </p>
     </div>
   );
 }
@@ -419,11 +389,13 @@ function Metric({
   icon,
   label,
   value,
+  sub,
   gold,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: React.ReactNode;
+  value: string;
+  sub: string;
   gold?: boolean;
 }) {
   return (
@@ -441,17 +413,142 @@ function Metric({
       <div className="mt-2 text-[11px]" style={{ color: WHITE_65 }}>
         {label}
       </div>
-      {typeof value === "string" ? (
-        <div
-          className="font-display text-[26px] font-black leading-none tabular-nums"
-          style={{ color: gold ? "var(--color-gold)" : "#fff" }}
-        >
-          {value}
-        </div>
-      ) : (
-        <div className="mt-0.5 text-white">{value}</div>
-      )}
+      <div
+        className="font-display text-[26px] font-black leading-none tabular-nums"
+        style={{ color: gold ? "var(--color-gold)" : "#fff" }}
+      >
+        {value}
+      </div>
+      <div className="mt-1.5 text-[11px] leading-[1.35]" style={{ color: WHITE_65 }}>
+        {sub}
+      </div>
     </div>
+  );
+}
+
+/* -------------------------- The day, and the report ------------------------- */
+
+/**
+ * Normal-flow section under the reveal: page one of the report Pocari received,
+ * and two of Gofer's stills from the table. Real pictures of the real day; no
+ * stock, nothing generated.
+ */
+function DayAndReport() {
+  return (
+    <section className="border-t border-line bg-white">
+      <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:px-8 sm:py-20">
+        <div className="mb-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          <Icon.Pulse className="text-ink" size={15} />
+          The day, and the report
+        </div>
+        <p className="mb-8 max-w-[38em] text-[17px] leading-[1.6] text-muted sm:text-[18px]">
+          Photos from the table on Oct 14, shot by Gofer. The still below is page one
+          of the report Pocari received: the funnel, and card taps by half hour.
+        </p>
+
+        <figure className="m-0 overflow-hidden rounded-2xl border border-line">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/img/pocari-lmu-report.jpg"
+            alt="Page one of the Pocari Sweat × LMU activation report: 200+ samples, 94 people tapped a card, 65 Apple Wallet passes, 64 still in wallets, the funnel, and a chart of card taps and Wallet adds in 30-minute bins"
+            className="block h-auto w-full"
+            loading="lazy"
+          />
+        </figure>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <figure className="m-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/pocari-lmu-table.jpg"
+              alt="A student holding up an Ice Slurry pouch in front of the Pocari Sweat tent at LMU"
+              className="aspect-[4/3] w-full rounded-2xl object-cover"
+              loading="lazy"
+            />
+            <figcaption className="mt-2 text-[13px] text-muted">
+              The Pocari Sweat table at the Wellness Wednesday market.
+            </figcaption>
+          </figure>
+          <figure className="m-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/pocari-lmu-wheel.jpg"
+              alt="A staffer behind the Pocari Sweat table with the prize wheel and samples"
+              className="aspect-[4/3] w-full rounded-2xl object-cover"
+              style={{ objectPosition: "center 30%" }}
+              loading="lazy"
+            />
+            <figcaption className="mt-2 text-[13px] text-muted">
+              Prize wheel and samples at the table.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------- Menu ----------------------------------- */
+
+const MENU = [
+  {
+    name: "Core",
+    role: "Wallet proof.",
+    body: "NFC cards at your table, an Apple Wallet pass, tracked links, and the report: who tapped, who added, who kept it, who clicked.",
+  },
+  {
+    name: "Plus",
+    role: "Re-engage.",
+    body: "One update later from the brand to everyone who kept the pass: a new product, an event, where to buy. Clicks reported.",
+  },
+  {
+    name: "Advanced",
+    role: "In-store.",
+    body: "A coupon barcode on the pass that a cashier scans, so a purchase ties back to the tap. Only when a store will scan.",
+  },
+];
+
+/** Names and what each layer does. No prices on the site: a day gets scoped on a call. */
+function Menu() {
+  return (
+    <section id="menu" className="border-t border-line bg-fill">
+      <div className="mx-auto w-full max-w-[1120px] px-6 py-16 sm:px-8 sm:py-20">
+        <div className="mb-5 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          <Icon.Wallet className="text-ink" size={15} />
+          Three ways to run it
+        </div>
+        <h2 className="m-0 font-display text-[32px] font-medium leading-[1.08] tracking-[-0.025em] text-ink sm:text-[40px]">
+          Core, Plus, Advanced.
+        </h2>
+
+        <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-3">
+          {MENU.map((m) => (
+            <div key={m.name} className="border-t border-ink pt-5">
+              <h3 className="m-0 font-display text-[22px] font-bold tracking-[-0.02em] text-ink">
+                {m.name}
+              </h3>
+              <p className="mt-2 text-[15px] leading-[1.6] text-ink">
+                <span className="font-semibold">{m.role} </span>
+                <span className="text-muted">{m.body}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+          <p className="m-0 max-w-[36em] text-[15px] leading-[1.6] text-muted">
+            No prices here. Quoting a sampling day before seeing it is guesswork, so
+            tell us about yours and we&rsquo;ll scope it on a call.
+          </p>
+          <Link
+            href={PILOT}
+            className="shrink-0 self-start rounded-full bg-ink px-[26px] py-3.5 text-[15px] font-semibold text-white sm:self-auto"
+          >
+            Book a call
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -481,28 +578,20 @@ const Icon = {
       <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" />
     </svg>
   ),
-  Bars: ({ size = 18, className }: IconProps) => (
+  Wallet: ({ size = 18, className }: IconProps) => (
     <svg {...base(size)} className={className} aria-hidden="true">
-      <path d="M4 20v-4M10 20v-8M16 20v-12M22 20v-6" />
+      <rect x="3" y="6" width="18" height="13" rx="2" />
+      <path d="M3 10h18M16 14.5h2" />
     </svg>
   ),
-  Target: ({ size = 18, className }: IconProps) => (
+  Check: ({ size = 18, className }: IconProps) => (
     <svg {...base(size)} className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22" />
+      <path d="M20 6 9 17l-5-5" />
     </svg>
   ),
-  Pin: ({ size = 18, className }: IconProps) => (
+  ArrowUpRight: ({ size = 18, className }: IconProps) => (
     <svg {...base(size)} className={className} aria-hidden="true">
-      <path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z" />
-      <circle cx="12" cy="10" r="2.5" />
-    </svg>
-  ),
-  Clock: ({ size = 18, className }: IconProps) => (
-    <svg {...base(size)} className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
+      <path d="M7 17 17 7M8 7h9v9" />
     </svg>
   ),
   ChevronDown: ({ size = 18, className }: IconProps) => (
