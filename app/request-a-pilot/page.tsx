@@ -4,9 +4,9 @@ import RequestPilotForm from "./RequestPilotForm";
 
 // Public lead-capture page — override the layout's default noindex.
 export const metadata: Metadata = {
-  title: "Request a pilot · Campus Run",
+  title: "Book a call · Campus Run",
   description:
-    "Tell us about the activation. We'll find the fit and run one, low risk, so the numbers speak for themselves.",
+    "Tell us about your next sampling day: who you are, who staffs the booth, what you tracked last time, whether a store will scan. Kasey emails back within two business days to set up a call.",
   robots: { index: true, follow: true },
 };
 

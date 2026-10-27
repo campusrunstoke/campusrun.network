@@ -4,30 +4,43 @@ import { useState } from "react";
 import Link from "next/link";
 
 /**
- * "Request a pilot" — a centered white modal card on an ink radial backdrop.
+ * "Book a call" — a centered white card on an ink radial backdrop.
  *
- * Posts to the existing /api/leads endpoint (no backend change): the design's
- * fields map straight onto the leads schema —
- *   Name              → contactName
- *   Work email        → email
- *   Phone             → phone
- *   Brand or org      → company           (required: the leads.company column is NOT NULL)
- *   Website           → website
- *   activation chips  → interests[]       (already a text[] column)
- *   "if other" text   → message
+ * The form's job is to let Kasey see the job before the call: who they are, who
+ * staffs the booth, what they tracked last time, whether a store will scan.
+ * It posts to the existing /api/leads endpoint (no backend change). Answers map
+ * onto leads columns the admin table and the notification email already show —
+ *   Name                 → contactName
+ *   Work email           → email
+ *   Phone                → phone
+ *   Brand or agency      → company     (required: the leads.company column is NOT NULL)
+ *   Website              → website
+ *   You are              → role
+ *   Next sampling day    → timeline
+ *   Campus or city       → campuses
+ *   Staffing, tracked last time, redeem partner, anything else
+ *                        → message, one labelled line each
+ *   interests            → [] (not used by this form)
  *
  * Gold Rule holds: the only gold here is the success checkmark's tint. The submit
- * action is ink (the design's choice), not gold.
+ * action is ink, not gold.
  */
 
-const OPTIONS = [
-  "Product sampling",
-  "Brand launch",
-  "Festival or event",
-  "Campus activation",
-  "Mentorship program",
-  "Other",
+const ROLE = ["A brand", "An agency", "A field or staffing team", "Something else"] as const;
+const STAFFING = [
+  "Our own field team",
+  "An agency or staffing partner",
+  "Student ambassadors",
+  "Not decided yet",
 ] as const;
+const TRACKED = [
+  "Samples handed out",
+  "Foot traffic or impressions",
+  "Sign-ups or opt-ins",
+  "Coupon redemptions",
+  "Nothing formal",
+] as const;
+const REDEEM = ["Yes, a store or retailer will scan", "No", "Not sure"] as const;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ERROR = "#b21e15"; // --error-deep
@@ -39,14 +52,19 @@ export default function RequestPilotForm() {
   const [brand, setBrand] = useState("");
   const [website, setWebsite] = useState("");
   const [website2, setWebsite2] = useState(""); // honeypot
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const [other, setOther] = useState("");
+  const [role, setRole] = useState("");
+  const [staffing, setStaffing] = useState("");
+  const [tracked, setTracked] = useState<Record<string, boolean>>({});
+  const [redeem, setRedeem] = useState("");
+  const [nextDay, setNextDay] = useState("");
+  const [where, setWhere] = useState("");
+  const [notes, setNotes] = useState("");
 
   const [error, setError] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
 
-  function toggle(opt: string) {
-    setChecked((c) => ({ ...c, [opt]: !c[opt] }));
+  function toggleTracked(opt: string) {
+    setTracked((t) => ({ ...t, [opt]: !t[opt] }));
   }
 
   async function submit(ev: React.FormEvent) {
@@ -62,13 +80,24 @@ export default function RequestPilotForm() {
       return;
     }
     if (!brand.trim()) {
-      setError("Please add the brand or organization this is for.");
+      setError("Please add the brand or agency this is for.");
       return;
     }
     setError("");
     setStatus("submitting");
 
-    const interests = OPTIONS.filter((o) => checked[o]);
+    // The qualifying answers travel in `message`, one labelled line each, so they
+    // show in the admin table and the notification email with no schema change.
+    const trackedList = TRACKED.filter((o) => tracked[o]);
+    const message = [
+      staffing && `Staffing: ${staffing}`,
+      trackedList.length > 0 && `Tracked last time: ${trackedList.join(", ")}`,
+      redeem && `Redeem partner: ${redeem}`,
+      notes.trim() && `Notes: ${notes.trim()}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
@@ -79,8 +108,11 @@ export default function RequestPilotForm() {
           phone,
           company: brand,
           website,
-          interests,
-          message: other,
+          role,
+          timeline: nextDay,
+          campuses: where,
+          interests: [],
+          message,
           website2,
         }),
       });
@@ -122,11 +154,10 @@ export default function RequestPilotForm() {
               </svg>
             </div>
             <h1 className="m-0 font-display text-[26px] font-bold tracking-[-0.02em] text-ink">
-              You&rsquo;re on the list.
+              Got it.
             </h1>
             <p className="mx-auto mb-6 mt-2 max-w-[30em] text-[15px] leading-[1.55] text-muted">
-              We&rsquo;ll reach out within two business days to find the fit and set up
-              your first pilot.
+              Kasey will email you within two business days to set up a call.
             </p>
             <Link
               href="/"
@@ -144,36 +175,59 @@ export default function RequestPilotForm() {
               </span>
             </div>
             <h1 className="m-0 font-display text-[30px] font-bold tracking-[-0.02em] text-ink">
-              Request a pilot
+              Tell us about your next sampling day
             </h1>
             <p className="mb-7 mt-1.5 text-[15px] leading-[1.5] text-muted">
-              Tell us about the activation. We&rsquo;ll find the fit and run one, low
-              risk, so the numbers speak for themselves.
+              Kasey reads these and emails back within two business days to set up a
+              call. The day gets scoped on the call, not from this form.
             </p>
 
             <div className="flex flex-col gap-[18px]">
               <Field label="Name" required value={name} onChange={setName} autoComplete="name" />
               <Field label="Work email" required type="email" value={email} onChange={setEmail} inputMode="email" autoComplete="email" />
               <Field label="Phone" optional value={phone} onChange={setPhone} type="tel" inputMode="tel" autoComplete="tel" />
-              <Field label="Brand or organization" required value={brand} onChange={setBrand} autoComplete="organization" />
+              <Field label="Brand or agency" required value={brand} onChange={setBrand} autoComplete="organization" />
               <Field label="Website" optional value={website} onChange={setWebsite} inputMode="url" autoComplete="url" />
+
+              <Choices legend="You are" options={ROLE} value={role} onChange={setRole} />
+              <Choices legend="Who staffs the booth" options={STAFFING} value={staffing} onChange={setStaffing} />
 
               <div>
                 <span className="mb-3 block text-[14px] font-semibold text-ink">
-                  What are you activating?
+                  What you tracked last time
+                  <span className="font-normal text-[#86868B]"> (pick any)</span>
                 </span>
                 <div className="grid grid-cols-1 gap-x-5 gap-y-2.5 sm:grid-cols-2">
-                  {OPTIONS.map((opt) => (
-                    <Checkbox key={opt} label={opt} checked={!!checked[opt]} onToggle={() => toggle(opt)} />
+                  {TRACKED.map((opt) => (
+                    <Checkbox key={opt} label={opt} checked={!!tracked[opt]} onToggle={() => toggleTracked(opt)} />
                   ))}
                 </div>
-                <input
-                  value={other}
-                  onChange={(e) => setOther(e.target.value)}
-                  placeholder="If other, please specify"
-                  className="mt-3.5 w-full rounded-lg border border-line bg-white px-3.5 py-3 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
-                />
               </div>
+
+              <Choices
+                legend="Is there a redeem partner?"
+                hint="A store or retailer that will scan a coupon barcode at the register."
+                options={REDEEM}
+                value={redeem}
+                onChange={setRedeem}
+              />
+
+              <Field label="Next sampling day" optional value={nextDay} onChange={setNextDay} placeholder="Nov 12, or not scheduled yet" maxLength={80} />
+              <Field label="Campus or city" optional value={where} onChange={setWhere} maxLength={500} />
+
+              <label className="block">
+                <span className="mb-2 block text-[14px] font-semibold text-ink">
+                  Anything else
+                  <span className="font-normal text-[#86868B]"> (optional)</span>
+                </span>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  maxLength={4000}
+                  className="w-full rounded-lg border border-line bg-white px-3.5 py-3 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
+                />
+              </label>
 
               {error && (
                 <div className="-mt-1 text-[13px]" style={{ color: ERROR }}>
@@ -198,7 +252,7 @@ export default function RequestPilotForm() {
                 disabled={status === "submitting"}
                 className="mt-1.5 w-full rounded-lg bg-ink py-[15px] text-[15px] font-semibold text-white transition-colors hover:bg-ink-deep disabled:opacity-60"
               >
-                {status === "submitting" ? "Sending…" : "Request a pilot"}
+                {status === "submitting" ? "Sending…" : "Book a call"}
               </button>
             </div>
           </form>
@@ -217,6 +271,8 @@ function Field({
   type = "text",
   inputMode,
   autoComplete,
+  placeholder,
+  maxLength,
 }: {
   label: string;
   value: string;
@@ -226,6 +282,8 @@ function Field({
   type?: string;
   inputMode?: "text" | "email" | "tel" | "url";
   autoComplete?: string;
+  placeholder?: string;
+  maxLength?: number;
 }) {
   return (
     <label className="block">
@@ -240,9 +298,56 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         inputMode={inputMode}
         autoComplete={autoComplete}
+        placeholder={placeholder}
+        maxLength={maxLength}
         className="w-full rounded-lg border border-line bg-white px-3.5 py-3 text-[15px] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
       />
     </label>
+  );
+}
+
+/** A one-answer question: radios drawn in the same style as the checkboxes. */
+function Choices({
+  legend,
+  hint,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  hint?: string;
+  options: readonly string[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <fieldset className="m-0 min-w-0 border-0 p-0">
+      <legend className="block text-[14px] font-semibold text-ink">{legend}</legend>
+      {hint && <p className="mb-0 mt-1 text-[13px] text-muted">{hint}</p>}
+      <div className="mt-3 grid grid-cols-1 gap-x-5 gap-y-2.5 sm:grid-cols-2">
+        {options.map((opt) => {
+          const on = value === opt;
+          return (
+            <label key={opt} className="flex cursor-pointer items-center gap-[11px] py-1">
+              <input
+                type="radio"
+                name={legend}
+                className="sr-only"
+                checked={on}
+                onChange={() => onChange(opt)}
+              />
+              <span
+                className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-all"
+                style={{ border: on ? "1.5px solid var(--color-ink)" : "1.5px solid #D2D2D7", background: "#fff" }}
+              >
+                {on && <span className="h-2.5 w-2.5 rounded-full bg-ink" />}
+              </span>
+              <span className="text-[15px] text-ink">{opt}</span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
 

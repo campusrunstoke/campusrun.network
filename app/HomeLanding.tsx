@@ -85,6 +85,14 @@ export default function HomeLanding() {
     window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
   const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  // Other pages link to /#proof. In the reveal layout the proof panel sits under
+  // the hero at scroll 0, so a plain anchor jump would show nothing: scroll to it.
+  useEffect(() => {
+    if (window.location.hash === "#proof") {
+      window.scrollTo({ top: window.innerHeight });
+    }
+  }, []);
+
   const hero = <Hero onSeeHow={toConsole} reduced={stacked} />;
   const console_ = <Console onBackTop={toTop} />;
 
